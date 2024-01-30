@@ -23,9 +23,9 @@
 
 -----
 
-Gagarin is a service for creating and managing chatbots and agents. You can choose your LLM provider and your prompt.
+Gagarin is a service for creating and managing chatbots and agents. You can choose your LLM providers and your prompts.
 Your agents can interact with the world around them through tools. Using retrieval augmented generation (RAG) they
-can learn about various topics, including you or your organization.
+can learn about various topics, including your privately hosted data.
 
 -----
 
