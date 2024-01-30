@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Security, Body, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Security, Body, HTTPException, WebSocket
 from pydantic import BaseModel, EmailStr
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
@@ -9,10 +9,12 @@ import jwt
 from typing import List
 import uvicorn
 
-from services.tool import Tool
-from services.health_check import HealthUpdate
-from models.tool import ToolModel
-from models.health_check import HealthUpdateModel
+from services.agent import Agent
+from services.instance import Instance
+from services.provider import Provider
+from models.agent import AgentModel
+from models.instance import InstanceModel
+from models.provider import ProviderModel
 from config.supabase import get_supabase
 from config.config import Settings
 from utils import error_handler  # Import the decorator from utils.py
@@ -47,32 +49,100 @@ def root():
 def health_check():
     return 'OK'
 
+# Providers endpoints
+@app.post('/providers')
+@error_handler
+def create_provider(provider: ProviderModel, user = Depends(authenticate)):
+    Provider.create_in_db(provider)
+    return provider
+
+@app.get('/providers')
+@error_handler
+def get_providers(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):
+    return Provider.get_providers(limit = limit, created_at_lt = created_at_lt)
+
+@app.get('/providers/{id}')
+@error_handler
+def get_provider(id: str, user = Depends(authenticate)):
+    return Provider.get_provider_by_id(id)
+
+@app.put('/providers/{id}')
+@error_handler
+def update_provider(id: str, provider: ProviderModel, user = Depends(authenticate)):
+    return Provider.update_provider_in_db(id, provider)
+
+@app.delete('/providers/{id}')
+@error_handler
+def delete_provider(id: str, user = Depends(authenticate)):
+    return Provider.delete_provider_in_db(id)
+
 # Agents endpoints
 @app.post('/agents')
 @error_handler
-def create_tool(tool: ToolModel, user = Depends(authenticate)):
-    Tool.create_in_db(tool)
-    return tool
+def create_agent(agent: AgentModel, user = Depends(authenticate)):
+    Agent.create_in_db(agent)
+    return agent
 
 @app.get('/agents')
 @error_handler
-def get_tools(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):    
-    return Tool.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
+def get_agents(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):    
+    return Agent.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
 
 @app.get('/agents/{id}')
 @error_handler
-def get_tool(id: str, user = Depends(authenticate)):
-    return Tool.get_in_db(id)
+def get_agent(id: str, user = Depends(authenticate)):
+    return Agent.get_in_db(id)
 
 @app.put('/agents/{id}')
 @error_handler
-def update_tool(id: str, tool: ToolModel, user = Depends(authenticate)):
-    return Tool.update_in_db(id, tool)
+def update_agent(id: str, agent: AgentModel, user = Depends(authenticate)):
+    return Agent.update_in_db(id, agent)
 
 @app.delete('/agents/{id}')
 @error_handler
-def delete_tool(id: str, user = Depends(authenticate)):
-    return Tool.delete_in_db(id)
+def delete_agent(id: str, user = Depends(authenticate)):
+    return Agent.delete_in_db(id)
+
+# Instances endpoints
+@app.post('/instances')
+@error_handler
+def create_instance(instance: InstanceModel, user = Depends(authenticate)):
+    if instance.agent not in [agent.id for agent in Agent.get_all_in_db()]:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    Instance.create_in_db(instance)
+    return instance
+
+@app.get('/instances')
+@error_handler
+def get_instances(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):
+    return Instance.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
+
+@app.get('/instances/{id}')
+@error_handler
+def get_instance(id: str, user = Depends(authenticate)):
+    return Instance.get_in_db(id)
+
+@app.put('/instances/{id}')
+@error_handler
+def update_instance(id: str, instance: InstanceModel, user = Depends(authenticate)):
+    return Instance.update_in_db(id, instance)
+
+@app.delete('/instances/{id}')
+@error_handler
+def delete_instance(id: str, user = Depends(authenticate)):
+    return Instance.delete_in_db(id)
+
+# Chat via websocket
+# host a websocket where users can send and receive messages from an instance
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    await websocket.send_text("Hello, World!")
+    while True:
+        data = await websocket.receive_text()
+        # Process the received message
+        # ...
+        await websocket.send_text("Response to: " + data)
 
 # User endpoints
 @app.post('/users/sign_up')

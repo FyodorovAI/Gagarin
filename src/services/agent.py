@@ -40,12 +40,13 @@ class Agent():
             raise e
 
     @staticmethod
-    def get_in_db(id: str) -> dict:
+    def get_in_db(id: str) -> AgentModel:
         if not id:
             raise ValueError('Agent ID is required')
         try:
             result = supabase.table('agents').select('*').eq('id', id).limit(1).execute()
-            agent = result.data[0]
+            agent_dict = result.data[0]
+            agent = AgentModel(**agent_dict)
             return agent
         except Exception as e:
             print('Error fetching agent', str(e))

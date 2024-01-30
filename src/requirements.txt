@@ -6,3 +6,5 @@ python-dotenv
 fastapi
 uvicorn
 PyJWT
+langchain
+langchain-openai
