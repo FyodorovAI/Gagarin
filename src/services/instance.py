@@ -1,10 +1,11 @@
+from fastapi import WebSocket
 from models.instance import InstanceModel
 from typing import Union
 from datetime import datetime, timedelta
 from supabase import  Client
 from config.supabase import get_supabase
 # Models
-from langchain.agents import AgentExecutor, initialize_agent
+from langchain.agents import initialize_agent
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory.buffer import ConversationBufferMemory
@@ -15,8 +16,9 @@ supabase: Client = get_supabase()
 class Instance():
     instance: InstanceModel
 
-    def chat(self, websocket: WebSocket):
+    async def chat(self, websocket: WebSocket):
         await websocket.accept()
+        await websocket.send_text("Hello World!")
         while True:
             data = await websocket.receive_text()
             
@@ -61,21 +63,14 @@ class Instance():
                 verbose=True,
                 prompt=PromptTemplate.from_template(prompt),
             )
-            # Create an agent executor by passing in the agent and tools
-            # return AgentExecutor(agent=agent, tools=tools, verbose=True, return_only_outputs=True)
         return agent
 
 
-    def run_model(self, input):
+    async def run_model(self, input):
         # Call the agent executor
-        agent_executor = self.create_model()
+        agent = self.create_model()
         # Run the agent executor
-        agent_executor.invoke(
-            {
-                "input": input,
-            }
-        )
-        return
+        return await agent.ainvoke(input)        
 
     @staticmethod    
     def create_in_db(instance: InstanceModel) -> str:
@@ -88,12 +83,13 @@ class Instance():
             raise e
 
     @staticmethod
-    def update_in_db(id: str, instance: dict) -> dict:
+    def update_in_db(id: str, instance: dict) -> InstanceModel:
         if not id:
             raise ValueError('Instance ID is required')
         try:
             result = supabase.table('instances').update(instance).eq('id', id).execute()
-            return result.data[0]
+            instance = InstanceModel(**result.data[0])
+            return instance
         except Exception as e:
             print('An error occurred while updating instance:', id, str(e))
             raise
@@ -110,19 +106,19 @@ class Instance():
             raise e
 
     @staticmethod
-    def get_in_db(id: str) -> dict:
+    def get_in_db(id: str) -> InstanceModel:
         if not id:
             raise ValueError('Instance ID is required')
         try:
             result = supabase.table('instances').select('*').eq('id', id).limit(1).execute()
-            instance = result.data[0]
+            instance = InstanceModel(**result.data[0])
             return instance
         except Exception as e:
             print('Error fetching instance', str(e))
             raise e
 
     @staticmethod
-    def get_all_in_db(limit: int = 10, created_at_lt: datetime = datetime.now()) -> [dict]:
+    def get_all_in_db(limit: int = 10, created_at_lt: datetime = datetime.now()) -> [InstanceModel]:
         try:
             result = supabase.from_('instances') \
                 .select("*") \
@@ -130,8 +126,8 @@ class Instance():
                 .lt('created_at', created_at_lt) \
                 .order('created_at', desc=True) \
                 .execute()
-            instances = result.data
-            return instances
+            instance_models = [InstanceModel(**instance) for instance in result.data]
+            return instance_models
         except Exception as e:
             print('Error fetching instances', str(e))
             raise e

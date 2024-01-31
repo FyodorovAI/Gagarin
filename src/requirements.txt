@@ -8,3 +8,4 @@ uvicorn
 PyJWT
 langchain
 langchain-openai
+asyncio

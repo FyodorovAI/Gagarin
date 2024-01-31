@@ -1,19 +1,22 @@
 from functools import wraps
 from fastapi import HTTPException
+import asyncio
 
 def error_handler(f):
     @wraps(f)
-    def wrapper(*args, **kwargs):
+    async def wrapper(*args, **kwargs):
         try:
-            return f(*args, **kwargs)
+            # Use 'await' for async functions
+            if asyncio.iscoroutinefunction(f):
+                return await f(*args, **kwargs)
+            else:
+                return f(*args, **kwargs)
         except HTTPException as http_exc:
-            # Print the HTTPException with the function name and re-raise it
             print(f"{f.__name__} - HTTP Exception: {http_exc.detail}")
             raise
         except Exception as exc:
-            # Print the exception with the function name and raise a generic HTTP 400 error
             print(f"{f.__name__} - Unhandled Exception: {exc}")
-            raise HTTPException(status_code=400, detail="A generic error occurred")
+            raise HTTPException(status_code=400, detail="An error occurred")
     return wrapper
 
 # Usage example

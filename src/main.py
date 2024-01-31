@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Security, Body, HTTPException, WebSocket
+from fastapi import FastAPI, Depends, HTTPException, Security, Body, WebSocket
 from pydantic import BaseModel, EmailStr
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
@@ -134,20 +134,24 @@ def delete_instance(id: str, user = Depends(authenticate)):
 
 # Chat via websocket
 # host a websocket where users can send and receive messages from an instance
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+@app.websocket("/instances/{id}/ws")
+async def websocket_endpoint(id: str, websocket: WebSocket):
     await websocket.accept()
+    instance = Instance.get_in_db(id)
     await websocket.send_text("Hello, World!")
     while True:
         data = await websocket.receive_text()
         # Process the received message
         # ...
+        instance.run_model(data)
         await websocket.send_text("Response to: " + data)
 
 # User endpoints
 @app.post('/users/sign_up')
 @error_handler
 async def sign_up(email: str = Body(...), password: str = Body(...), invite_code: str = Body(...)):
+    print("About to sign up")
+    print(f"Signing up using supabase: {supabase}")
     # Check if invite code exists
     invite_code_check = supabase.from_("invite_codes").select("nr_uses, max_uses").eq("code", invite_code).execute()
     if not invite_code_check.data:
@@ -182,6 +186,7 @@ async def sign_in(email: str = Body(...), password: str = Body(...)):
         "email": email,
         "password": password,
     })
+
     return {"message": "User signed in successfully", "jwt": user.session.access_token}
 
 
