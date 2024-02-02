@@ -8,12 +8,11 @@ activate:
 
 # Install dependencies
 install:
-	pip install -r requirements.txt
+	. ./venv/bin/activate && pip install -r requirements.txt
 
 # Run the application
 run:
-	. ./venv/bin/activate
-	uvicorn main:app --reload
+	. ./venv/bin/activate && uvicorn main:app --reload --port 8001
 
 # Install test requirements
 install-test:

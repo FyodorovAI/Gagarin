@@ -3,7 +3,7 @@ from models.instance import InstanceModel
 from typing import Union
 from datetime import datetime, timedelta
 from supabase import  Client
-from config.supabase import get_supabase
+from fyodorov_utils.config.supabase import get_supabase
 # Models
 from langchain.agents import initialize_agent
 from langchain_openai import ChatOpenAI

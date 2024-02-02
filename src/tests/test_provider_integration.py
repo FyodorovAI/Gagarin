@@ -1,5 +1,5 @@
 import pytest
-from config.config import Settings
+from fyodorov_utils.config.config import Settings
 from models.provider import ProviderModel
 from services.provider import Provider
 from tests.test_provider_model import get_default_provider

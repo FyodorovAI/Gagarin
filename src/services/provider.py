@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from models.provider import ProviderModel
 from supabase import  Client
-from config.supabase import get_supabase
+from fyodorov_utils.config.supabase import get_supabase
 
 supabase: Client = get_supabase()
 

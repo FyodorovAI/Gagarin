@@ -2,7 +2,7 @@ import pytest
 from models.agent import AgentModel
 from services.agent import Agent
 from tests.test_agent_model import get_default_agent
-from config.config import Settings
+from fyodorov_utils.config.config import Settings
 
 @pytest.fixture
 async def tool_fixture() -> tuple[AgentModel, str]:

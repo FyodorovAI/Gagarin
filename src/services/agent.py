@@ -2,7 +2,7 @@ from models.agent import AgentModel
 from typing import Union
 from datetime import datetime, timedelta
 from supabase import  Client
-from config.supabase import get_supabase
+from fyodorov_utils.config.supabase import get_supabase
 
 supabase: Client = get_supabase()
 
