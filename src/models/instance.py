@@ -8,6 +8,7 @@ MAX_TITLE_LENGTH = 80
 VALID_CHARACTERS_REGEX = r'^[a-zA-Z0-9\s.,!?:;\'"-]+$'
 
 class InstanceModel(BaseModel):
+    id: str = Field(None, alias='id')
     agent_id: str # Links to AgentModel.id
     title: str = ""
     chat_history: str = ""
@@ -22,11 +23,14 @@ class InstanceModel(BaseModel):
             return True
 
     def to_dict(self) -> dict:
-        return {
+        data = {
             'agent_id': self.agent_id,
             'title': self.title,
             'chat_history': self.chat_history,
         }
+        if self.id is not None:
+            data['id'] = self.id
+        return data
 
     @staticmethod
     def validate_title(title: str) -> str:

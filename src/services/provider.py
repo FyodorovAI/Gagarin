@@ -49,12 +49,14 @@ class Provider(ProviderModel):
             raise e
 
     @staticmethod
-    async def get_provider_by_id(id: str) -> dict:
+    async def get_provider_by_id(id: str) -> ProviderModel:
         if not id:
             raise ValueError('Provider ID is required')
         try:
             result = supabase.table('providers').select('*').eq('id', id).limit(1).execute()
-            provider = result.data[0]
+            provider_dict = result.data[0]
+            print('Fetched provider', provider_dict)
+            provider = ProviderModel(**provider_dict)
             return provider
         except Exception as e:
             print('Error fetching provider', str(e))

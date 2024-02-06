@@ -1,20 +1,22 @@
 from fastapi import WebSocket
-from models.instance import InstanceModel
 from typing import Union
 from datetime import datetime, timedelta
-from supabase import  Client
+from supabase import Client
 from fyodorov_utils.config.supabase import get_supabase
+from models.instance import InstanceModel
+from .agent import Agent
+from .provider import Provider
 # Models
 from langchain.agents import initialize_agent
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory.buffer import ConversationBufferMemory
-
+from langchain.prompts.prompt import PromptTemplate
 
 supabase: Client = get_supabase()
 
-class Instance():
-    instance: InstanceModel
+class Instance(InstanceModel):
+    agent: LLMChain = None
 
     async def chat(self, websocket: WebSocket):
         await websocket.accept()
@@ -24,12 +26,13 @@ class Instance():
             
             await websocket.send_text("Response to: " + data)
 
-    def create_model(self):
+    async def create_model(self):
         # using langchain create a model instance
-        agent = Agent.get_in_db(self.agent)
+        agent: AgentModel = Agent.get_in_db(self.agent_id)
+        provider = await Provider.get_provider_by_id(agent.provider_id)
         model = ChatOpenAI(
             model=agent.model,
-            openai_api_key=agent_llm.llm.apiKey,
+            openai_api_key=provider.api_key,
             # streaming=self.enable_streaming,
             temperature=0,
         )
@@ -40,7 +43,7 @@ class Instance():
         )
 
         # Create a langchain prompt
-        prompt = f"{agent.prompt}" f"\n\n{datetime.datetime.now().strftime('%Y-%m-%d')}" f"{instance.chat_history}"
+        prompt = f"{agent.prompt}" f"\n\n{datetime.now().strftime('%Y-%m-%d')}" f"{self.chat_history}"
 
         # Create a list of Tools
         tools = []
@@ -57,8 +60,7 @@ class Instance():
             )
         else:
             agent = LLMChain(
-                llm=llm,
-                memory=memory,
+                llm=model,
                 output_key="output",
                 verbose=True,
                 prompt=PromptTemplate.from_template(prompt),
@@ -66,11 +68,18 @@ class Instance():
         return agent
 
 
-    async def run_model(self, input):
-        # Call the agent executor
-        agent = self.create_model()
+    async def run_model(self, input) -> str:
         # Run the agent executor
-        return await agent.ainvoke(input)        
+        try:
+            self.chat_history = f"{self.chat_history}\n{input}"
+            self.agent = await self.create_model()
+            result = await self.agent.ainvoke({})
+            print(f"Result: {result}")
+            self.chat_history = f"{self.chat_history}\n{result['output']}"
+            await self.update_in_db(self.id, {"chat_history": self.chat_history})
+            return result["output"]
+        except Exception as e:
+            print('An error occurred while running model:', str(e))
 
     @staticmethod    
     def create_in_db(instance: InstanceModel) -> str:
@@ -84,7 +93,7 @@ class Instance():
             raise e
 
     @staticmethod
-    def update_in_db(id: str, instance: dict) -> InstanceModel:
+    async def update_in_db(id: str, instance: dict) -> InstanceModel:
         if not id:
             raise ValueError('Instance ID is required')
         try:
@@ -112,7 +121,11 @@ class Instance():
             raise ValueError('Instance ID is required')
         try:
             result = supabase.table('instances').select('*').eq('id', id).limit(1).execute()
-            instance = InstanceModel(**result.data[0])
+            instance_dict = result.data[0]
+            instance_dict["agent_id"] = str(instance_dict["agent_id"])
+            instance_dict["id"] = str(instance_dict["id"])
+            print(f"Fetched instance: {instance_dict}")
+            instance = InstanceModel(**instance_dict)
             return instance
         except Exception as e:
             print('Error fetching instance', str(e))

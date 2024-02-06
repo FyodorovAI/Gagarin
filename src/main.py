@@ -121,14 +121,15 @@ def delete_instance(id: str, user = Depends(authenticate)):
 @app.websocket("/instances/{id}/ws")
 async def websocket_endpoint(id: str, websocket: WebSocket):
     await websocket.accept()
-    instance = Instance.get_in_db(id)
-    await websocket.send_text("Hello, World!")
+    instance_model = Instance.get_in_db(str(id))
+    instance = Instance(**instance_model.to_dict())
+    await websocket.send_text(instance.chat_history)
     while True:
         data = await websocket.receive_text()
         # Process the received message
         # ...
-        instance.run_model(data)
-        await websocket.send_text("Response to: " + data)
+        model_output = await instance.run_model(data)
+        await websocket.send_text(model_output)
 
 # User endpoints
 from fyodorov_utils.auth.endpoints import users_app
