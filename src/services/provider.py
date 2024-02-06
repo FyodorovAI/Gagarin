@@ -9,58 +9,51 @@ from fyodorov_utils.config.supabase import get_supabase
 supabase: Client = get_supabase()
 
 
-class Provider(BaseModel):
+class Provider(ProviderModel):
     provider: ProviderModel
 
-    async def update_provider_in_db(self) -> dict:
-        if not self.provider.id:
+    @staticmethod
+    async def update_provider_in_db(id: str, update: dict) -> dict:
+        if not id:
             raise ValueError('Provider ID is required')
-        update = {}
-        if self.provider.provider_name:
-            update['provider_name'] = str(self.provider.provider_name)
-        if self.provider.api_url:
-            update['api_url'] = str(self.provider.api_url)
-        if self.provider.api_key:
-            update['api_key'] = self.provider.api_key
-        if self.provider.models:
-            update['models'] = self.provider.models
         try:
-            result = supabase.table('providers').update(update).eq('id', self.provider.id).execute()
+            result = supabase.table('providers').update(update).eq('id', id).execute()
             update = result.data[0]
             print('Updated provider:', update)
             return update
         except Exception as e:
-            print(f"Error updating provider with id {self.provider.id} "
+            print(f"Error updating provider with id {id} "
                   f"and update {update} ")
             raise e
 
-    async def save_provider_in_db(self) -> dict:
+    @staticmethod
+    async def save_provider_in_db(provider: ProviderModel) -> dict:
         try:
-            result = supabase.table('proprovidersvider').insert(self.provider.to_dict()).execute()
+            result = supabase.table('providers').insert(provider.to_dict()).execute()
             provider = result.data[0]
             print('Saved health update', provider)
-            self.provider.id = provider['id']
             return provider
         except Exception as e:
             print('Error saving provider', str(e))
             raise e
 
-    async def delete_provider_in_db(self) -> bool:
-        if not self.provider.id:
+    @staticmethod
+    async def delete_provider_in_db(id) -> bool:
+        if not id:
             raise ValueError('Provider ID is required')
         try:
-            result = supabase.table('providers').delete().eq('id', self.provider.id).execute()
+            result = supabase.table('providers').delete().eq('id', id).execute()
             return True
         except Exception as e:
             print('Error deleting provider', str(e))
             raise e
 
-    async def get_provider_by_id(self, id: str) -> dict:
+    @staticmethod
+    async def get_provider_by_id(id: str) -> dict:
         if not id:
             raise ValueError('Provider ID is required')
-        self.provider.id = id
         try:
-            result = supabase.table('providers').select('*').eq('id', self.provider.id).limit(1).execute()
+            result = supabase.table('providers').select('*').eq('id', id).limit(1).execute()
             provider = result.data[0]
             return provider
         except Exception as e:

@@ -36,29 +36,29 @@ def health_check():
 # Providers endpoints
 @app.post('/providers')
 @error_handler
-def create_provider(provider: ProviderModel, user = Depends(authenticate)):
-    Provider.create_in_db(provider)
-    return provider
+async def create_provider(provider: ProviderModel, user = Depends(authenticate)):
+    print(f"ProviderModel: {provider}")
+    return await Provider.save_provider_in_db(provider)
 
 @app.get('/providers')
 @error_handler
-def get_providers(limit: int = 10, created_at_lt: datetime = datetime.now(), user = Depends(authenticate)):
-    return Provider.get_providers(limit = limit, created_at_lt = created_at_lt)
+async def get_providers(limit: int = 10, created_at_lt: datetime = datetime.now(), user = Depends(authenticate)):
+    return await Provider.get_providers(limit = limit, created_at_lt = created_at_lt)
 
 @app.get('/providers/{id}')
 @error_handler
-def get_provider(id: str, user = Depends(authenticate)):
-    return Provider.get_provider_by_id(id)
+async def get_provider(id: str, user = Depends(authenticate)):
+    return await Provider.get_provider_by_id(id)
 
 @app.put('/providers/{id}')
 @error_handler
-def update_provider(id: str, provider: ProviderModel, user = Depends(authenticate)):
-    return Provider.update_provider_in_db(id, provider)
+async def update_provider(id: str, provider: dict, user = Depends(authenticate)):
+    return await Provider.update_provider_in_db(id, update=provider)
 
 @app.delete('/providers/{id}')
 @error_handler
-def delete_provider(id: str, user = Depends(authenticate)):
-    return Provider.delete_provider_in_db(id)
+async def delete_provider(id: str, user = Depends(authenticate)):
+    return await Provider.delete_provider_in_db(id)
 
 # Agents endpoints
 @app.post('/agents')
@@ -79,7 +79,7 @@ def get_agent(id: str, user = Depends(authenticate)):
 
 @app.put('/agents/{id}')
 @error_handler
-def update_agent(id: str, agent: AgentModel, user = Depends(authenticate)):
+def update_agent(id: str, agent: dict, user = Depends(authenticate)):
     return Agent.update_in_db(id, agent)
 
 @app.delete('/agents/{id}')
@@ -91,7 +91,7 @@ def delete_agent(id: str, user = Depends(authenticate)):
 @app.post('/instances')
 @error_handler
 def create_instance(instance: InstanceModel, user = Depends(authenticate)):
-    if instance.agent not in [agent.id for agent in Agent.get_all_in_db()]:
+    if instance.agent_id not in [str(agent["id"]) for agent in Agent.get_all_in_db()]:
         raise HTTPException(status_code=404, detail="Agent not found")
     Instance.create_in_db(instance)
     return instance
@@ -108,7 +108,7 @@ def get_instance(id: str, user = Depends(authenticate)):
 
 @app.put('/instances/{id}')
 @error_handler
-def update_instance(id: str, instance: InstanceModel, user = Depends(authenticate)):
+def update_instance(id: str, instance: dict, user = Depends(authenticate)):
     return Instance.update_in_db(id, instance)
 
 @app.delete('/instances/{id}')

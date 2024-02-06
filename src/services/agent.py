@@ -46,8 +46,7 @@ class Agent():
         try:
             result = supabase.table('agents').select('*').eq('id', id).limit(1).execute()
             agent_dict = result.data[0]
-            agent = AgentModel(**agent_dict)
-            return agent
+            return agent_dict
         except Exception as e:
             print('Error fetching agent', str(e))
             raise e
@@ -62,6 +61,7 @@ class Agent():
                 .order('created_at', desc=True) \
                 .execute()
             agents = result.data
+            print(f"Fetched agents: {agents}")
             return agents
         except Exception as e:
             print('Error fetching agents', str(e))

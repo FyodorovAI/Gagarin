@@ -20,7 +20,7 @@ class Rag(TypedDict):
     collections: list[str]
 
 class AgentModel(BaseModel):
-    provider: Provider
+    provider_id: str
     model: str
     name_for_human: str
     description_for_human: str
@@ -42,7 +42,7 @@ class AgentModel(BaseModel):
 
     def to_dict(self) -> dict:
         return {
-            'provider': self.provider,
+            'provider_id': self.provider_id,
             'model': self.model,
             'name_for_human': self.name_for_human,
             'description_for_human': self.description_for_human,

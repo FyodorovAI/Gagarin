@@ -76,8 +76,9 @@ class Instance():
     def create_in_db(instance: InstanceModel) -> str:
         try:
             result = supabase.table('instances').insert(instance.to_dict()).execute()
-            instance_id = result.data[0]['id']
-            return instance_id
+            print(f"Result of query: {result}")
+            # instance_id = result.data[0]['id']
+            # return instance_id
         except Exception as e:
             print('Error creating instance', str(e))
             raise e
@@ -88,8 +89,8 @@ class Instance():
             raise ValueError('Instance ID is required')
         try:
             result = supabase.table('instances').update(instance).eq('id', id).execute()
-            instance = InstanceModel(**result.data[0])
-            return instance
+            print(f"Result of update: {result}")
+            return result.data[0]
         except Exception as e:
             print('An error occurred while updating instance:', id, str(e))
             raise

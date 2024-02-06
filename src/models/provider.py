@@ -4,8 +4,15 @@ from typing import Literal
 Provider = Literal['openai']
 
 class ProviderModel(BaseModel):
-    id: str | None
-    provider_name: Provider
+    name: Provider
     api_key: str
     api_url: HttpUrl
     models: list[str]
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'api_key': self.api_key,
+            'api_url': str(self.api_url),
+            'models': self.models
+        }

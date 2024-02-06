@@ -8,8 +8,7 @@ MAX_TITLE_LENGTH = 80
 VALID_CHARACTERS_REGEX = r'^[a-zA-Z0-9\s.,!?:;\'"-]+$'
 
 class InstanceModel(BaseModel):
-    id: str | None = None
-    agent: str # Links to AgentModel.id
+    agent_id: str # Links to AgentModel.id
     title: str = ""
     chat_history: str = ""
 
@@ -24,9 +23,9 @@ class InstanceModel(BaseModel):
 
     def to_dict(self) -> dict:
         return {
-            'agent': self.agent.id,
+            'agent_id': self.agent_id,
             'title': self.title,
-            'history': self.history,
+            'chat_history': self.chat_history,
         }
 
     @staticmethod
