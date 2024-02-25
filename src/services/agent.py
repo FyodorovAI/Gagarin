@@ -8,8 +8,9 @@ supabase: Client = get_supabase()
 
 class Agent():
     @staticmethod    
-    def create_in_db(agent: AgentModel) -> str:
+    def create_in_db(access_token: str, agent: AgentModel) -> str:
         try:
+            supabase = get_supabase(access_token)
             result = supabase.table('agents').insert(agent.to_dict()).execute()
             agent_id = result.data[0]['id']
             return agent_id

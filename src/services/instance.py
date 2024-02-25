@@ -4,82 +4,68 @@ from datetime import datetime, timedelta
 from supabase import Client
 from fyodorov_utils.config.supabase import get_supabase
 from models.instance import InstanceModel
+from models.agent import AgentModel
 from .agent import Agent
 from .provider import Provider
 # Models
-from langchain.agents import initialize_agent
+from langchain.agents import AgentType, initialize_agent, load_tools
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory.buffer import ConversationBufferMemory
 from langchain.prompts.prompt import PromptTemplate
+from langchain_community.tools import AIPluginTool
+from langchain.agents import create_structured_chat_agent, AgentExecutor
+from langchain_core.prompts.chat import ChatPromptTemplate
+
+from fyodorov_llm_agents.agents.openai import OpenAI
+from fyodorov_llm_agents.agents.base_agent import BaseAgent
+from fyodorov_utils.services.tool import Tool
 
 supabase: Client = get_supabase()
+
+JWT = "eyJhbGciOiJIUzI1NiIsImtpZCI6Im14MmVrTllBY3ZYN292LzMiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzA3MzI0MTMxLCJpYXQiOjE3MDczMjA1MzEsImlzcyI6Imh0dHBzOi8vbGptd2R2ZWZrZ3l4cnVjc2dla3cuc3VwYWJhc2UuY28vYXV0aC92MSIsInN1YiI6IjljYzYzOWQ0LWUwMzItNDM3Zi1hNWVhLTUzNDljZGE0YTNmZCIsImVtYWlsIjoiZGFuaWVsQGRhbmllbHJhbnNvbS5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7Imludml0ZV9jb2RlIjoiUkFOU09NIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MDczMjA1MzF9XSwic2Vzc2lvbl9pZCI6ImE4MTM4NmE1LTUxZTUtNDkyMS04ZjM3LWMyYWE3ODlhZDRhZiJ9.NNZA2rm1IQQ9wAhpyC8taMqregRmy8I9oZgT0P5heBg"
 
 class Instance(InstanceModel):
     agent: LLMChain = None
 
-    async def chat(self, websocket: WebSocket):
-        await websocket.accept()
-        await websocket.send_text("Hello World!")
-        while True:
-            data = await websocket.receive_text()
-            
-            await websocket.send_text("Response to: " + data)
+    def get_chat_history(self):
+        return [tuple(arr) for arr in self.chat_history]
 
-    async def create_model(self):
-        # using langchain create a model instance
+    async def use_custom_library(self, input: str = "", access_token: str = JWT) -> str:
         agent: AgentModel = Agent.get_in_db(self.agent_id)
         provider = await Provider.get_provider_by_id(agent.provider_id)
-        model = ChatOpenAI(
+        llm = OpenAI(
+            api_key=provider.api_key,
             model=agent.model,
-            openai_api_key=provider.api_key,
-            # streaming=self.enable_streaming,
-            temperature=0,
+            # model="gpt-4",
         )
+        for tenant in agent.tools:
+            for tool_id in tenant["tools"]:
+                print("[use_custom_library] tool id:", tool_id)
+                tool = Tool.get_in_db(access_token, tool_id)
+                llm.add_tool(tool)
+        prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d')}\n\n"
+        prompt += llm.get_tools_for_prompt()
+        print(f"----Prompt----\n{prompt}")
+        return llm.invoke(prompt, input)
 
-        # Create a memory
-        memory = ConversationBufferMemory(
-            memory_key="chat_history", return_messages=True
+    async def use_custom_library_async(self, input: str = "", access_token: str = JWT) -> str:
+        agent: AgentModel = Agent.get_in_db(self.agent_id)
+        provider = await Provider.get_provider_by_id(agent.provider_id)
+        llm = BaseAgent(
+            api_key=provider.api_key,
+            model=agent.model,
+            # model="gpt-4",
         )
-
-        # Create a langchain prompt
-        prompt = f"{agent.prompt}" f"\n\n{datetime.now().strftime('%Y-%m-%d')}" f"{self.chat_history}"
-
-        # Create a list of Tools
-        tools = []
-
-        if len(tools) > 0:
-            # Construct the OpenAI Tools agent
-            agent = initialize_agent(
-                agent_kwargs={
-                    "system_message": prompt,
-                    "extra_prompt_messages": [
-                        MessagesPlaceholder(variable_name="chat_history")
-                    ],
-                },
-            )
-        else:
-            agent = LLMChain(
-                llm=model,
-                output_key="output",
-                verbose=True,
-                prompt=PromptTemplate.from_template(prompt),
-            )
-        return agent
-
-
-    async def run_model(self, input) -> str:
-        # Run the agent executor
-        try:
-            self.chat_history = f"{self.chat_history}\n{input}"
-            self.agent = await self.create_model()
-            result = await self.agent.ainvoke({})
-            print(f"Result: {result}")
-            self.chat_history = f"{self.chat_history}\n{result['output']}"
-            await self.update_in_db(self.id, {"chat_history": self.chat_history})
-            return result["output"]
-        except Exception as e:
-            print('An error occurred while running model:', str(e))
+        for tenant in agent.tools:
+            for tool_id in tenant["tools"]:
+                print("[use_custom_library] tool id:", tool_id)
+                tool = Tool.get_in_db(access_token, tool_id)
+                llm.add_tool(tool)
+        prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d')}\n\n"
+        prompt += llm.get_tools_for_prompt()
+        async for result in llm.invoke_async(prompt, input):
+            yield result
 
     @staticmethod    
     def create_in_db(instance: InstanceModel) -> str:

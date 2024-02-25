@@ -9,4 +9,6 @@ PyJWT
 langchain
 langchain-openai
 asyncio
-fyodorov_utils==0.2.69
+langchain-community
+fyodorov_utils==0.2.71
+fyodorov_llm_agents==0.0.108

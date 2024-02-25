@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, Security, Body, WebSocket
+from fastapi import FastAPI, Depends, HTTPException, Security, Body, WebSocket, Request
 from pydantic import BaseModel, EmailStr
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import StreamingResponse
 from datetime import datetime
 from typing import List
 import uvicorn
@@ -15,7 +16,8 @@ from fyodorov_utils.decorators.logging import error_handler
 from services.agent import Agent
 from services.instance import Instance
 from services.provider import Provider
-from models.agent import AgentModel
+# from models.agent import AgentModel
+from fyodorov_llm_agents.agents.base_agent import BaseAgent as AgentModel
 from models.instance import InstanceModel
 from models.provider import ProviderModel
 
@@ -63,9 +65,20 @@ async def delete_provider(id: str, user = Depends(authenticate)):
 # Agents endpoints
 @app.post('/agents')
 @error_handler
-def create_agent(agent: AgentModel, user = Depends(authenticate)):
+async def create_agent(agent: AgentModel, user = Depends(authenticate)):
     Agent.create_in_db(agent)
     return agent
+
+@app.post('/agents/from-yaml')
+@error_handler
+async def create_agent_from_yaml(request: Request, user = Depends(authenticate)):
+    try:
+        agent_yaml = await request.body()
+        agent = AgentModel.from_yaml(agent_yaml)
+        return Agent.create_in_db(user['session_id'], agent)
+    except Exception as e:
+        print('Error creating agent from yaml', str(e))
+        raise HTTPException(status_code=400, detail="Invalid YAML format")
 
 @app.get('/agents')
 @error_handler
@@ -123,13 +136,21 @@ async def websocket_endpoint(id: str, websocket: WebSocket):
     await websocket.accept()
     instance_model = Instance.get_in_db(str(id))
     instance = Instance(**instance_model.to_dict())
-    await websocket.send_text(instance.chat_history)
+    await websocket.send_text([f"{tuple_item[0]}:\t {tuple_item[1]}\n" for tuple_item in instance.get_chat_history()])
     while True:
         data = await websocket.receive_text()
         # Process the received message
         # ...
-        model_output = await instance.run_model(data)
+        model_output = await instance.use_custom_library(data)
         await websocket.send_text(model_output)
+
+@app.get("/instances/{id}/stream")
+async def multiple_function_calls(id: str, input: str = Body(..., embed=True), user = Depends(authenticate)):
+    print(f"ID: {id}")
+    print(f"Input: {input}")
+    instance_model = Instance.get_in_db(str(id))
+    instance = Instance(**instance_model.to_dict())
+    return StreamingResponse(instance.use_custom_library_async(input=input, access_token=user['session_id']), media_type="text/plain")
 
 # User endpoints
 from fyodorov_utils.auth.endpoints import users_app
