@@ -18,7 +18,7 @@ from langchain.agents import create_structured_chat_agent, AgentExecutor
 from langchain_core.prompts.chat import ChatPromptTemplate
 
 from fyodorov_llm_agents.agents.openai import OpenAI
-from fyodorov_llm_agents.agents.base_agent import BaseAgent
+from fyodorov_llm_agents.agents.agent import Agent
 from fyodorov_utils.services.tool import Tool
 
 supabase: Client = get_supabase()
@@ -52,7 +52,7 @@ class Instance(InstanceModel):
     async def use_custom_library_async(self, input: str = "", access_token: str = JWT) -> str:
         agent: AgentModel = Agent.get_in_db(self.agent_id)
         provider = await Provider.get_provider_by_id(agent.provider_id)
-        llm = BaseAgent(
+        llm = Agent(
             api_key=provider.api_key,
             model=agent.model,
             # model="gpt-4",

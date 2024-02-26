@@ -12,12 +12,13 @@ import os
 
 from fyodorov_utils.auth.auth import authenticate
 from fyodorov_utils.decorators.logging import error_handler
+from fyodorov_utils.templates.agents import parse_yaml
 
 from services.agent import Agent
 from services.instance import Instance
 from services.provider import Provider
 # from models.agent import AgentModel
-from fyodorov_llm_agents.agents.base_agent import BaseAgent as AgentModel
+from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from models.instance import InstanceModel
 from models.provider import ProviderModel
 
@@ -68,6 +69,16 @@ async def delete_provider(id: str, user = Depends(authenticate)):
 async def create_agent(agent: AgentModel, user = Depends(authenticate)):
     Agent.create_in_db(agent)
     return agent
+
+@app.post('/agents/yaml')
+@error_handler
+async def create_agent_from_yaml(request: Request, user = Depends(authenticate)):
+    try:
+        agent_yaml = await request.body()
+        parse_yaml(agent_yaml)
+    except Exception as e:
+        print('Error parsing agents from yaml', str(e))
+        raise HTTPException(status_code=400, detail="Invalid YAML format")
 
 @app.post('/agents/from-yaml')
 @error_handler
