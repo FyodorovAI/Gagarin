@@ -67,8 +67,8 @@ async def delete_provider(id: str, user = Depends(authenticate)):
 @app.post('/agents')
 @error_handler
 async def create_agent(agent: AgentModel, user = Depends(authenticate)):
-    Agent.create_in_db(agent)
-    return agent
+    agent_id = Agent.create_in_db(user['session_id'], agent)
+    return agent_id
 
 @app.post('/agents/yaml')
 @error_handler
@@ -154,6 +154,15 @@ async def websocket_endpoint(id: str, websocket: WebSocket):
         # ...
         model_output = await instance.use_custom_library(data)
         await websocket.send_text(model_output)
+        
+# Chat
+@app.get("/instances/{id}/chat")
+async def chat(id: str, message: dict = Body(..., media_type="application/json"), user = Depends(authenticate)):
+    instance_model = Instance.get_in_db(str(id))
+    instance = Instance(**instance_model.to_dict())
+    res = await instance.chat_w_fn_calls(message["input"], user['session_id'])
+    return res
+
 
 @app.get("/instances/{id}/stream")
 async def multiple_function_calls(id: str, input: str = Body(..., embed=True), user = Depends(authenticate)):

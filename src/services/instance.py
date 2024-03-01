@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from supabase import Client
 from fyodorov_utils.config.supabase import get_supabase
 from models.instance import InstanceModel
-from models.agent import AgentModel
+from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from .agent import Agent
 from .provider import Provider
 # Models
@@ -18,7 +18,6 @@ from langchain.agents import create_structured_chat_agent, AgentExecutor
 from langchain_core.prompts.chat import ChatPromptTemplate
 
 from fyodorov_llm_agents.agents.openai import OpenAI
-from fyodorov_llm_agents.agents.agent import Agent
 from fyodorov_utils.services.tool import Tool
 
 supabase: Client = get_supabase()
@@ -67,6 +66,18 @@ class Instance(InstanceModel):
         async for result in llm.invoke_async(prompt, input):
             yield result
 
+    async def chat_w_fn_calls(self, input: str = "", access_token: str = JWT) -> str:
+        agent: AgentModel = Agent.get_in_db(self.agent_id)
+        provider = await Provider.get_provider_by_id(agent.provider_id)
+        llm = AgentModel(
+            api_key=provider.api_key,
+            model=agent.model,
+            # model="gpt-4",
+        )
+        prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        print(f"----Prompt----\n{prompt}\n---------------\n")
+        return llm.call_with_fn_calling(prompt, input)
+    
     @staticmethod    
     def create_in_db(instance: InstanceModel) -> str:
         try:
@@ -126,7 +137,7 @@ class Instance(InstanceModel):
                 .lt('created_at', created_at_lt) \
                 .order('created_at', desc=True) \
                 .execute()
-            instance_models = [InstanceModel(**instance) for instance in result.data]
+            instance_models = [InstanceModel(**{k: str(v) if not isinstance(v, list) else v for k, v in instance.items()}) for instance in result.data]
             return instance_models
         except Exception as e:
             print('Error fetching instances', str(e))
