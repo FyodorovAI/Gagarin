@@ -7,85 +7,44 @@ from models.instance import InstanceModel
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from .agent import Agent
 from .provider import Provider
-# Models
-from langchain.agents import AgentType, initialize_agent, load_tools
-from langchain_openai import ChatOpenAI
-from langchain.chains import LLMChain
-from langchain.memory.buffer import ConversationBufferMemory
-from langchain.prompts.prompt import PromptTemplate
-from langchain_community.tools import AIPluginTool
-from langchain.agents import create_structured_chat_agent, AgentExecutor
-from langchain_core.prompts.chat import ChatPromptTemplate
 
 from fyodorov_llm_agents.agents.openai import OpenAI
 from fyodorov_utils.services.tool import Tool
+from .model import LLM
+from models.model import LLMModel
 
 supabase: Client = get_supabase()
 
 JWT = "eyJhbGciOiJIUzI1NiIsImtpZCI6Im14MmVrTllBY3ZYN292LzMiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzA3MzI0MTMxLCJpYXQiOjE3MDczMjA1MzEsImlzcyI6Imh0dHBzOi8vbGptd2R2ZWZrZ3l4cnVjc2dla3cuc3VwYWJhc2UuY28vYXV0aC92MSIsInN1YiI6IjljYzYzOWQ0LWUwMzItNDM3Zi1hNWVhLTUzNDljZGE0YTNmZCIsImVtYWlsIjoiZGFuaWVsQGRhbmllbHJhbnNvbS5jb20iLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7Imludml0ZV9jb2RlIjoiUkFOU09NIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3MDczMjA1MzF9XSwic2Vzc2lvbl9pZCI6ImE4MTM4NmE1LTUxZTUtNDkyMS04ZjM3LWMyYWE3ODlhZDRhZiJ9.NNZA2rm1IQQ9wAhpyC8taMqregRmy8I9oZgT0P5heBg"
 
 class Instance(InstanceModel):
-    agent: LLMChain = None
 
-    def get_chat_history(self):
-        return [tuple(arr) for arr in self.chat_history]
-
-    async def use_custom_library(self, input: str = "", access_token: str = JWT) -> str:
-        agent: AgentModel = Agent.get_in_db(self.agent_id)
-        provider = await Provider.get_provider_by_id(agent.provider_id)
-        llm = OpenAI(
-            api_key=provider.api_key,
-            model=agent.model,
-            # model="gpt-4",
-        )
-        for tenant in agent.tools:
-            for tool_id in tenant["tools"]:
-                print("[use_custom_library] tool id:", tool_id)
-                tool = Tool.get_in_db(access_token, tool_id)
-                llm.add_tool(tool)
-        prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d')}\n\n"
-        prompt += llm.get_tools_for_prompt()
-        print(f"----Prompt----\n{prompt}")
-        return llm.invoke(prompt, input)
-
-    async def use_custom_library_async(self, input: str = "", access_token: str = JWT) -> str:
-        agent: AgentModel = Agent.get_in_db(self.agent_id)
-        provider = await Provider.get_provider_by_id(agent.provider_id)
-        llm = Agent(
-            api_key=provider.api_key,
-            model=agent.model,
-            # model="gpt-4",
-        )
-        for tenant in agent.tools:
-            for tool_id in tenant["tools"]:
-                print("[use_custom_library] tool id:", tool_id)
-                tool = Tool.get_in_db(access_token, tool_id)
-                llm.add_tool(tool)
-        prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d')}\n\n"
-        prompt += llm.get_tools_for_prompt()
-        async for result in llm.invoke_async(prompt, input):
-            yield result
-
-    async def chat_w_fn_calls(self, input: str = "", access_token: str = JWT) -> str:
-        agent: AgentModel = Agent.get_in_db(self.agent_id)
-        provider = await Provider.get_provider_by_id(agent.provider_id)
+    async def chat_w_fn_calls(self, input: str = "", access_token: str = JWT, user_id: str = "") -> str:
+        agent: AgentModel = await Agent.get_in_db(access_token=access_token, id = self.agent_id)
+        model: LLMModel = await LLM.get_model(access_token, user_id, id = agent.model_id)
+        print(f"Model fetched via LLM.get_model in chat_w_fn_calls: {model}")
+        provider: Provider = await Provider.get_provider_by_id(access_token, id = model.provider)
         llm = AgentModel(
             api_key=provider.api_key,
-            model=agent.model,
-            # model="gpt-4",
+            model=model.base_model,
         )
         prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        print(f"----Prompt----\n{prompt}\n---------------\n")
         return llm.call_with_fn_calling(prompt, input)
     
     @staticmethod    
-    def create_in_db(instance: InstanceModel) -> str:
+    def create_in_db(access_token: str, instance: InstanceModel) -> dict:
         try:
-            result = supabase.table('instances').insert(instance.to_dict()).execute()
+            supabase = get_supabase(access_token)
+            result = supabase.table('instances').upsert(instance.to_dict()).execute()
             print(f"Result of query: {result}")
-            # instance_id = result.data[0]['id']
-            # return instance_id
+            instance_dict = result.data[0]
+            return instance_dict
         except Exception as e:
+            print(f"An error occurred while creating instance: {e}")
+            if e.code == '23505':
+                print('Instance already exists')
+                instance = Instance.get_by_title_and_agent(access_token, instance.title, instance.agent_id)
+                return instance
             print('Error creating instance', str(e))
             raise e
 
@@ -110,6 +69,23 @@ class Instance(InstanceModel):
             return True
         except Exception as e:
             print('Error deleting instance', str(e))
+            raise e
+
+    @staticmethod
+    def get_by_title_and_agent(access_token: str, title: str, agent_id: str) -> dict:
+        if not title:
+            raise ValueError('Instance title is required')
+        if not agent_id:
+            raise ValueError('Agent ID is required')
+        try:
+            result = supabase.table('instances').select('*').eq('title', title).eq('agent_id', agent_id).limit(1).execute()
+            instance_dict = result.data[0]
+            instance_dict["agent_id"] = str(instance_dict["agent_id"])
+            instance_dict["id"] = str(instance_dict["id"])
+            print(f"Fetched instance: {instance_dict}")
+            return instance_dict
+        except Exception as e:
+            print('Error fetching instance', str(e))
             raise e
 
     @staticmethod

@@ -3,17 +3,30 @@ from typing import Union
 from datetime import datetime, timedelta
 from supabase import  Client
 from fyodorov_utils.config.supabase import get_supabase
+from .model import LLM
 
 supabase: Client = get_supabase()
 
-class Agent():
+class Agent(AgentModel):
     @staticmethod    
     def create_in_db(access_token: str, agent: AgentModel) -> str:
         try:
             supabase = get_supabase(access_token)
-            result = supabase.table('agents').insert(agent.to_dict()).execute()
+            result = supabase.table('agents').upsert(agent.to_dict()).execute()
             agent_id = result.data[0]['id']
             return agent_id
+        except Exception as e:
+            print('Error creating agent', str(e))
+            raise e
+
+    @staticmethod    
+    def create_agent_in_db(access_token: str, agent: dict, user_id: str) -> str:
+        try:
+            supabase = get_supabase(access_token)
+            agent['user_id'] = user_id
+            result = supabase.table('agents').upsert(agent).execute()
+            agent_dict = result.data[0]
+            return agent_dict
         except Exception as e:
             print('Error creating agent', str(e))
             raise e
@@ -41,14 +54,17 @@ class Agent():
             raise e
 
     @staticmethod
-    def get_in_db(id: str) -> AgentModel:
+    async def get_in_db(access_token: str, id: str) -> AgentModel:
         if not id:
             raise ValueError('Agent ID is required')
         try:
+            supabase = get_supabase(access_token)
             result = supabase.table('agents').select('*').eq('id', id).limit(1).execute()
             agent_dict = result.data[0]
-            agent_dict["provider_id"] = str(agent_dict["provider_id"])
             print(f"Fetched agent: {agent_dict}")
+            agent_dict["model_id"] = str(agent_dict["model_id"])
+            model = await LLM.get_model(access_token=access_token, id = agent_dict["model_id"])
+            agent_dict['model'] = model.name
             agent = AgentModel(**agent_dict)
             return agent
         except Exception as e:
@@ -70,3 +86,15 @@ class Agent():
         except Exception as e:
             print('Error fetching agents', str(e))
             raise e
+
+    @staticmethod
+    async def save_from_dict(access_token: str, user_id: str, data):
+        agent = AgentModel.from_dict(data)
+        model_name = data['model']
+        model = await LLM.get_model(access_token, user_id, model_name)
+        agent_dict = agent.to_dict()
+        agent_dict['model_id'] = model.id
+        del agent_dict['model']
+        print('Saving agent', agent_dict)
+        agent = Agent.create_agent_in_db(access_token, agent_dict, user_id)
+        return agent

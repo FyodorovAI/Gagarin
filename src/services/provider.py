@@ -10,7 +10,6 @@ supabase: Client = get_supabase()
 
 
 class Provider(ProviderModel):
-    provider: ProviderModel
 
     @staticmethod
     async def update_provider_in_db(id: str, update: dict) -> dict:
@@ -27,11 +26,14 @@ class Provider(ProviderModel):
             raise e
 
     @staticmethod
-    async def save_provider_in_db(provider: ProviderModel) -> dict:
+    async def save_provider_in_db(access_token: str, provider: ProviderModel, user_id: str) -> dict:
         try:
-            result = supabase.table('providers').insert(provider.to_dict()).execute()
+            supabase = get_supabase(access_token)
+            provider_dict = provider.to_dict()
+            provider_dict['user_id'] = user_id
+            result = supabase.table('providers').upsert(provider_dict).execute()
             provider = result.data[0]
-            print('Saved health update', provider)
+            print('Saved provider', provider)
             return provider
         except Exception as e:
             print('Error saving provider', str(e))
@@ -49,13 +51,34 @@ class Provider(ProviderModel):
             raise e
 
     @staticmethod
-    async def get_provider_by_id(id: str) -> ProviderModel:
+    async def get_provider_by_id(access_token: str, id: str) -> ProviderModel:
         if not id:
             raise ValueError('Provider ID is required')
         try:
+            supabase = get_supabase(access_token)
             result = supabase.table('providers').select('*').eq('id', id).limit(1).execute()
             provider_dict = result.data[0]
             print('Fetched provider', provider_dict)
+            provider_dict['id'] = str(provider_dict['id'])
+            provider = ProviderModel(**provider_dict)
+            return provider
+        except Exception as e:
+            print('Error fetching provider', str(e))
+            raise e
+
+    @staticmethod
+    async def get_provider(access_token: str, user_id: str, name: str) -> ProviderModel:
+        print(f"Getting provider with name: {name} and user_id: {user_id}")
+        if not name:
+            raise ValueError('Provider name is required')
+        if not user_id:
+            raise ValueError('User ID is required')
+        try:
+            supabase = get_supabase(access_token)
+            result = supabase.table('providers').select('*').eq('user_id', user_id).eq('name', name).limit(1).execute()
+            provider_dict = result.data[0]
+            print('Fetched provider', provider_dict)
+            provider_dict['id'] = str(provider_dict['id'])
             provider = ProviderModel(**provider_dict)
             return provider
         except Exception as e:

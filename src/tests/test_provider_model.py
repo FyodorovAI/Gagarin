@@ -3,8 +3,7 @@ from pydantic import ValidationError, HttpUrl
 from models.provider import ProviderModel
 
 def get_default_provider(
-        provider_id: str | None = "5",
-        provider_name: str | None = "openai",
+        provider: str | None = "openai",
         api_url: str | None = "https://api.openai.com",
         api_key: str | None = "key",
         models: list[str] | None = ["text-davinci-003"]
@@ -12,7 +11,6 @@ def get_default_provider(
 
     try:
         provider = ProviderModel(
-            id=provider_id,
             provider_name=provider_name,
             api_url=api_url,
             api_key=api_key,

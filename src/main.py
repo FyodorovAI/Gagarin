@@ -1,18 +1,18 @@
 from fastapi import FastAPI, Depends, HTTPException, Security, Body, WebSocket, Request
 from pydantic import BaseModel, EmailStr
 from fastapi.exceptions import HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import StreamingResponse
 from datetime import datetime
 from typing import List
 import uvicorn
+import yaml
 
 import os
 
 from fyodorov_utils.auth.auth import authenticate
 from fyodorov_utils.decorators.logging import error_handler
-from fyodorov_utils.templates.agents import parse_yaml
 
 from services.agent import Agent
 from services.instance import Instance
@@ -21,6 +21,9 @@ from services.provider import Provider
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from models.instance import InstanceModel
 from models.provider import ProviderModel
+from services.provider import Provider
+from services.model import LLMModel
+from services.model import LLM
 
 
 app = FastAPI(title="Gagarin", description="A service for creating and managing chatbots and agents", version="0.0.1")
@@ -41,7 +44,12 @@ def health_check():
 @error_handler
 async def create_provider(provider: ProviderModel, user = Depends(authenticate)):
     print(f"ProviderModel: {provider}")
-    return await Provider.save_provider_in_db(provider)
+    print(f"User: {user}")
+    return await Provider.save_provider_in_db(
+        access_token=user['session_id'],
+        provider=provider,
+        user_id=user['sub']
+    )
 
 @app.get('/providers')
 @error_handler
@@ -69,16 +77,6 @@ async def delete_provider(id: str, user = Depends(authenticate)):
 async def create_agent(agent: AgentModel, user = Depends(authenticate)):
     agent_id = Agent.create_in_db(user['session_id'], agent)
     return agent_id
-
-@app.post('/agents/yaml')
-@error_handler
-async def create_agent_from_yaml(request: Request, user = Depends(authenticate)):
-    try:
-        agent_yaml = await request.body()
-        parse_yaml(agent_yaml)
-    except Exception as e:
-        print('Error parsing agents from yaml', str(e))
-        raise HTTPException(status_code=400, detail="Invalid YAML format")
 
 @app.post('/agents/from-yaml')
 @error_handler
@@ -160,7 +158,7 @@ async def websocket_endpoint(id: str, websocket: WebSocket):
 async def chat(id: str, message: dict = Body(..., media_type="application/json"), user = Depends(authenticate)):
     instance_model = Instance.get_in_db(str(id))
     instance = Instance(**instance_model.to_dict())
-    res = await instance.chat_w_fn_calls(message["input"], user['session_id'])
+    res = await instance.chat_w_fn_calls(message["input"], access_token=user['session_id'], user_id=user['sub'])
     return res
 
 
@@ -171,6 +169,60 @@ async def multiple_function_calls(id: str, input: str = Body(..., embed=True), u
     instance_model = Instance.get_in_db(str(id))
     instance = Instance(**instance_model.to_dict())
     return StreamingResponse(instance.use_custom_library_async(input=input, access_token=user['session_id']), media_type="text/plain")
+
+# Yaml parsing
+@app.post('/yaml')
+@error_handler
+async def create_from_yaml(request: Request, user = Depends(authenticate)):
+    try:
+        fyodorov_yaml = await request.body()
+        print(f"fyodorov_yaml: \n{fyodorov_yaml}")
+        fyodorov_config = yaml.safe_load(fyodorov_yaml)
+        print(f"fyodorov_config: \n{fyodorov_config}")
+        response = {
+            "providers": [],
+            "models": [],
+            "agents": [],
+            "instances": [],
+            "tools": []
+        }
+        print(f"fyodorov_config: \n{fyodorov_config}")
+        if "providers" in fyodorov_config:
+            print("Saving providers")
+            for provider_dict in fyodorov_config["providers"]:
+                print(f"Provider: {provider_dict}")
+                provider = ProviderModel.from_dict(provider_dict)
+                new_provider = await Provider.save_provider_in_db(user['session_id'], provider, user['sub'])
+                response["providers"].append(new_provider)
+        print("Saved providers", response["providers"])
+        if "models" in fyodorov_config:
+            for model_dict in fyodorov_config["models"]:
+                model = LLMModel.from_dict(model_dict)
+                print(f"Model: {model}")
+                new_model = await LLM.save_model_in_db(user['session_id'], user['sub'], model)
+                response["models"].append(new_model)
+        print("Saved models", response["models"])
+        if 'tools' in fyodorov_config:
+            for tool_dict in fyodorov_config["tools"]:
+                tool = ToolModel.from_dict(tool_dict)
+                new_tool = await Tool.save_tool_in_db(user['session_id'], tool, user['sub'])
+                response["tools"].append(new_tool)
+        print("Saved tools", response["tools"])
+        if "agents" in fyodorov_config:
+            for agent_dict in fyodorov_config["agents"]:
+                new_agent = await Agent.save_from_dict(user['session_id'], user['sub'], agent_dict)
+                response["agents"].append(new_agent)
+        print("Saved agents", response["agents"])
+        if len(response["agents"]) > 0:
+            for agent in response["agents"]:
+                instance = InstanceModel(agent_id=str(agent['id']), title="Default Instance")
+                new_instance = Instance.create_in_db(user['session_id'], instance)
+                response["instances"].append(new_instance)
+        print("Saved instances", response["instances"])
+        return response
+    except Exception as e:
+        print('Error parsing config from yaml', str(e))
+        raise HTTPException(status_code=400, detail="Invalid YAML format")
 
 # User endpoints
 from fyodorov_utils.auth.endpoints import users_app
