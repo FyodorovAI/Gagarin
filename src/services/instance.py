@@ -21,7 +21,7 @@ class Instance(InstanceModel):
 
     async def chat_w_fn_calls(self, input: str = "", access_token: str = JWT, user_id: str = "") -> str:
         agent: AgentModel = await Agent.get_in_db(access_token=access_token, id = self.agent_id)
-        model: LLMModel = await LLM.get_model(access_token, user_id, id = agent.model_id)
+        model: LLMModel = await LLM.get_model(access_token, user_id, id = agent.modelid)
         print(f"Model fetched via LLM.get_model in chat_w_fn_calls: {model}")
         provider: Provider = await Provider.get_provider_by_id(access_token, id = model.provider)
         llm = AgentModel(
