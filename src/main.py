@@ -19,6 +19,7 @@ from services.instance import Instance
 from services.provider import Provider
 # from models.agent import AgentModel
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
+from fyodorov_llm_agents.tools.tool import Tool as ToolModel
 from models.instance import InstanceModel
 from models.provider import ProviderModel
 from services.provider import Provider
@@ -204,8 +205,10 @@ async def create_from_yaml(request: Request, user = Depends(authenticate)):
         print("Saved models", response["models"])
         if 'tools' in fyodorov_config:
             for tool_dict in fyodorov_config["tools"]:
-                tool = ToolModel.from_dict(tool_dict)
-                new_tool = await Tool.save_tool_in_db(user['session_id'], tool, user['sub'])
+                # marshall back to yaml
+                tool_yaml = yaml.dump(tool_dict)
+                print(f"Tool: {tool_yaml}")
+                new_tool = ToolModel.from_yaml(tool_yaml)
                 response["tools"].append(new_tool)
         print("Saved tools", response["tools"])
         if "agents" in fyodorov_config:

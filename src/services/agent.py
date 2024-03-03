@@ -93,7 +93,7 @@ class Agent(AgentModel):
         model_name = data['model']
         model = await LLM.get_model(access_token, user_id, model_name)
         agent_dict = agent.to_dict()
-        agent_dict['modelid'] = model.id
+        agent_dict['model_id'] = model.id
         del agent_dict['model']
         print('Saving agent', agent_dict)
         agent = Agent.create_agent_in_db(access_token, agent_dict, user_id)
