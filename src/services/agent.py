@@ -62,7 +62,7 @@ class Agent(AgentModel):
             result = supabase.table('agents').select('*').eq('id', id).limit(1).execute()
             agent_dict = result.data[0]
             print(f"Fetched agent: {agent_dict}")
-            agent_dict["modelid"] = str(agent_dict["modelid"])
+            agent_dict["modelid"] = str(agent_dict["model_id"])
             model = await LLM.get_model(access_token=access_token, id = agent_dict["modelid"])
             agent_dict['model'] = model.name
             agent = AgentModel(**agent_dict)
