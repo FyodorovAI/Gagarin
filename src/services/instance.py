@@ -38,7 +38,8 @@ class Instance(InstanceModel):
             "role": "assistant",
             "content": res["answer"]
         })
-        self.update_in_db(self.id, self.to_dict())
+        print(f"Saving chat history: {self.chat_history}")
+        self.create_in_db(access_token=access_token, instance=self)
         return res
 
     @staticmethod    
