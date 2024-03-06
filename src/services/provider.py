@@ -28,7 +28,7 @@ class Provider(ProviderModel):
     @staticmethod
     async def save_provider_in_db(access_token: str, provider: ProviderModel, user_id: str) -> dict:
         if provider.api_key == "" or not provider.api_key:
-            raise ValueError('api_key is required when creating a provider')
+            raise HTTPException(status_code=400, detail="api_key is required when creating a provider")
         try:
             supabase = get_supabase(access_token)
             provider_dict = provider.to_dict()
