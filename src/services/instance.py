@@ -28,9 +28,19 @@ class Instance(InstanceModel):
             api_key=provider.api_key,
             model=model.base_model,
         )
+        self.chat_history.append({
+            "role": "user",
+            "content": input
+        })
         prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        return llm.call_with_fn_calling(prompt, input)
-    
+        res = llm.call_with_fn_calling(prompt=prompt, input=input, history=self.chat_history)
+        self.chat_history.append({
+            "role": "assistant",
+            "content": res["answer"]
+        })
+        self.update_in_db(access_token, self.id)
+        return res
+
     @staticmethod    
     def create_in_db(access_token: str, instance: InstanceModel) -> dict:
         try:

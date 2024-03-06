@@ -4,3 +4,4 @@ dist/
 __pycache__
 *.tgz
 venv/
+.DS_Store

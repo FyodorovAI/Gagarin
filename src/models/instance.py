@@ -11,7 +11,7 @@ class InstanceModel(BaseModel):
     id: str = Field(None, alias='id')
     agent_id: str # Links to AgentModel.id
     title: str = ""
-    chat_history: list[list[str]] = []
+    chat_history: list[dict] = []
 
     def validate(self) -> bool:
         try:
