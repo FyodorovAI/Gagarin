@@ -1,7 +1,7 @@
 from pydantic import BaseModel, HttpUrl
 from typing import Literal
 
-Provider = Literal['openai']
+Provider = Literal['openai', 'mistral']
 
 class ProviderModel(BaseModel):
     id: str = None
