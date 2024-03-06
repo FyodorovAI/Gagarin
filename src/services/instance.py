@@ -48,6 +48,7 @@ class Instance(InstanceModel):
             result = supabase.table('instances').upsert(instance.to_dict()).execute()
             print(f"Result of query: {result}")
             instance_dict = result.data[0]
+            instance_dict["id"] = str(instance_dict["id"])
             return instance_dict
         except Exception as e:
             print(f"An error occurred while creating instance: {e}")
@@ -65,7 +66,9 @@ class Instance(InstanceModel):
         try:
             result = supabase.table('instances').update(instance).eq('id', id).execute()
             print(f"Result of update: {result}")
-            return result.data[0]
+            instance_dict = result.data[0]
+            instance_dict["id"] = str(instance_dict["id"])
+            return instance_dict
         except Exception as e:
             print('An error occurred while updating instance:', id, str(e))
             raise
