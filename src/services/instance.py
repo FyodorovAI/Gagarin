@@ -28,12 +28,12 @@ class Instance(InstanceModel):
             api_key=provider.api_key,
             model=model.base_model,
         )
+        prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        res = llm.call_with_fn_calling(prompt=prompt, input=input, history=self.chat_history)
         self.chat_history.append({
             "role": "user",
             "content": input
         })
-        prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        res = llm.call_with_fn_calling(prompt=prompt, input=input, history=self.chat_history)
         self.chat_history.append({
             "role": "assistant",
             "content": res["answer"]
