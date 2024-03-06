@@ -38,7 +38,7 @@ class Instance(InstanceModel):
             "role": "assistant",
             "content": res["answer"]
         })
-        self.update_in_db(access_token, self.id)
+        self.update_in_db(self.id, self.to_dict())
         return res
 
     @staticmethod    
