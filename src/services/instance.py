@@ -49,6 +49,7 @@ class Instance(InstanceModel):
             print(f"Result of query: {result}")
             instance_dict = result.data[0]
             instance_dict["id"] = str(instance_dict["id"])
+            instance_dict["agent_id"] = str(instance_dict["agent_id"])
             return instance_dict
         except Exception as e:
             print(f"An error occurred while creating instance: {e}")
