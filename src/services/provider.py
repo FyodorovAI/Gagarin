@@ -39,6 +39,9 @@ class Provider(ProviderModel):
             return provider
         except Exception as e:
             print('Error saving provider', str(e))
+            if e.code == '23505':
+                print('Provider already exists')
+                return provider
             raise e
 
     @staticmethod

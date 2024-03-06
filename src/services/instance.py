@@ -38,7 +38,6 @@ class Instance(InstanceModel):
             "role": "assistant",
             "content": res["answer"]
         })
-        print(f"Saving chat history: {self.chat_history}")
         self.create_in_db(access_token=access_token, instance=self)
         return res
 
