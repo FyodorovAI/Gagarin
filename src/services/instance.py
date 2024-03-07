@@ -24,12 +24,15 @@ class Instance(InstanceModel):
         model: LLMModel = await LLM.get_model(access_token, user_id, id = agent.modelid)
         print(f"Model fetched via LLM.get_model in chat_w_fn_calls: {model}")
         provider: Provider = await Provider.get_provider_by_id(access_token, id = model.provider)
-        llm = AgentModel(
-            api_key=provider.api_key,
-            model=model.base_model,
-        )
         prompt = f"{agent.prompt}\n\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        res = llm.call_with_fn_calling(prompt=prompt, input=input, history=self.chat_history)
+        agent.prompt = prompt
+        agent.model = model.base_model
+        agent.api_key = provider.api_key
+        for index, tool in enumerate(agent.tools):
+            if isinstance(tool, str):
+                agent.tools[index] = Tool.get_by_name_and_user_id(access_token, tool, user_id)
+                print(f"Tool fetched via Tool.get_by_name_and_user_id in chat_w_fn_calls: {agent.tools[index]}")
+        res = agent.call_with_fn_calling(input=input, history=self.chat_history)
         self.chat_history.append({
             "role": "user",
             "content": input
@@ -38,6 +41,7 @@ class Instance(InstanceModel):
             "role": "assistant",
             "content": res["answer"]
         })
+        # Update history
         self.create_in_db(access_token=access_token, instance=self)
         return res
 
