@@ -34,9 +34,9 @@ class Provider(ProviderModel):
             provider.provider_name = provider.provider_name.lower()
             if not provider.api_url or provider.api_url == "":
                 if provider.provider_name == "openai":
-                    provider.api_url = "https://api.openai.com"
+                    provider.api_url = "https://api.openai.com/v1"
                 elif provider.provider_name == "mistral":
-                    provider.api_url = "https://api.mistral.ai"
+                    provider.api_url = "https://api.mistral.ai/v1"
                 else:
                     raise ValueError('No URL provided when creating a provider')
             provider_dict = provider.to_dict()
