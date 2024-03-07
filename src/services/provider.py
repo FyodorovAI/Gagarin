@@ -31,11 +31,11 @@ class Provider(ProviderModel):
             raise HTTPException(status_code=400, detail="api_key is required when creating a provider")
         try:
             supabase = get_supabase(access_token)
-            provider.provider_name = provider.provider_name.lower()
+            provider.name = provider.name.lower()
             if not provider.api_url or provider.api_url == "":
-                if provider.provider_name == "openai":
+                if provider.name == "openai":
                     provider.api_url = "https://api.openai.com/v1"
-                elif provider.provider_name == "mistral":
+                elif provider.name == "mistral":
                     provider.api_url = "https://api.mistral.ai/v1"
                 else:
                     raise ValueError('No URL provided when creating a provider')
