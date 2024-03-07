@@ -31,6 +31,13 @@ class Provider(ProviderModel):
             raise HTTPException(status_code=400, detail="api_key is required when creating a provider")
         try:
             supabase = get_supabase(access_token)
+            if not provider.api_url or provider.api_url == "":
+                if provider.provider_name == "openai":
+                    provider.api_url = "https://api.openai.com"
+                elif provider.provider_name == "mistral":
+                    provider.api_url = "https://api.mistral.ai"
+                else:
+                    raise ValueError('No URL provided when creating a provider')
             provider_dict = provider.to_dict()
             provider_dict['user_id'] = user_id
             result = supabase.table('providers').upsert(provider_dict).execute()
