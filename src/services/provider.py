@@ -1,9 +1,9 @@
-
+from fastapi import HTTPException
 from pydantic import BaseModel
 import re
 from datetime import datetime
 from models.provider import ProviderModel
-from supabase import  Client
+from supabase import Client
 from fyodorov_utils.config.supabase import get_supabase
 
 supabase: Client = get_supabase()
