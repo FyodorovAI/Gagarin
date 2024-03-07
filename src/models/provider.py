@@ -7,7 +7,7 @@ class ProviderModel(BaseModel):
     id: str = None
     name: Provider
     api_key: str
-    api_url: HttpUrl
+    api_url: HttpUrl | None
 
     def to_dict(self):
         return {
