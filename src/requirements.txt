@@ -10,6 +10,6 @@ langchain
 langchain-openai
 asyncio
 langchain-community
-fyodorov_utils==0.2.89
+fyodorov_utils==0.2.90
 fyodorov_llm_agents==0.2.118
 litellm
