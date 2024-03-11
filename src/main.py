@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, Security, Body, WebSocket, Request
+from fastapi import Request
 from pydantic import BaseModel, EmailStr
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse, Response
@@ -57,22 +58,13 @@ def health_check():
 async def create_provider(provider: ProviderModel, user = Depends(authenticate)):
     print(f"ProviderModel: {provider}")
     print(f"User: {user}")
-    return await Provider.save_provider_in_db(
-        access_token=user['session_id'],
-        provider=provider,
-        user_id=user['sub']
-    )
-
-@app.post('/providers/ip')
-@error_handler
-async def update_provider_ip(provider: ProviderModel, user = Depends(authenticate)):
-    # Get the IP address of the user
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    print(f"IP: {ip}")
-    # Replace the API URL with the new IP
-    provider.api_url = re.sub(r"http://[^:]+:\d+", f"http://{ip}:11434", provider.api_url)
-    print(f"ProviderModel: {provider}")
-    print(f"User: {user}")
+    if provider.api_url.contains("__IP__"):        
+        # Get the IP address of the user
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        print(f"IP: {ip}")
+        # Replace the API URL with the new IP
+        provider.api_url = re.sub("__IP__", ip, provider.api_url)
+        print(f"New API URL: {provider.api_url}")
     return await Provider.save_provider_in_db(
         access_token=user['session_id'],
         provider=provider,
