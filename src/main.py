@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import List
 import uvicorn
 import yaml
+import re
 
 import os
 
@@ -52,6 +53,22 @@ async def create_provider(provider: ProviderModel, user = Depends(authenticate))
         user_id=user['sub']
     )
 
+@app.post('/providers/ip')
+@error_handler
+async def update_provider_ip(provider: ProviderModel, user = Depends(authenticate)):
+    # Get the IP address of the user
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    print(f"IP: {ip}")
+    # Replace the API URL with the new IP
+    provider.api_url = re.sub(r"http://[^:]+:\d+", f"http://{ip}:11434", provider.api_url)
+    print(f"ProviderModel: {provider}")
+    print(f"User: {user}")
+    return await Provider.save_provider_in_db(
+        access_token=user['session_id'],
+        provider=provider,
+        user_id=user['sub']
+    )
+
 @app.get('/providers')
 @error_handler
 async def get_providers(limit: int = 10, created_at_lt: datetime = datetime.now(), user = Depends(authenticate)):
@@ -71,6 +88,37 @@ async def update_provider(id: str, provider: dict, user = Depends(authenticate))
 @error_handler
 async def delete_provider(id: str, user = Depends(authenticate)):
     return await Provider.delete_provider_in_db(id)
+
+# Model endpoints
+@app.post('/models')
+@error_handler
+async def create_model(model: LLMModel, user = Depends(authenticate)):
+    return await LLM.update_model_in_db(access_token=user['session_id'], user_id=user['sub'], update=model.to_dict())
+
+@app.get('/models')
+@error_handler
+async def get_models(limit: int = 10, created_at_lt: datetime = datetime.now(), user = Depends(authenticate)):
+    return await LLM.get_models(limit = limit, created_at_lt = created_at_lt)
+
+@app.get('/models/{id}')
+@error_handler
+async def get_model(id: str, user = Depends(authenticate)):
+    return await LLM.get_model(access_token=user['session_id'], id=id)
+
+@app.get('/models/')
+@error_handler
+async def get_model_by_name(name: str, user = Depends(authenticate)):
+    return await LLM.get_model(access_token=user['session_id'], user_id=user['sub'], name=name)
+
+@app.put('/models/{id}')
+@error_handler
+async def update_model(id: str, model: dict, user = Depends(authenticate)):
+    return await LLM.update_model(id, model)
+
+@app.delete('/models/{id}')
+@error_handler
+async def delete_model(id: str, user = Depends(authenticate)):
+    return await LLM.delete_model(id)
 
 # Agents endpoints
 @app.post('/agents')
