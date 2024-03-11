@@ -102,8 +102,11 @@ async def delete_provider(id: str, user = Depends(authenticate)):
 # Model endpoints
 @app.post('/models')
 @error_handler
-async def create_model(model: LLMModel, user = Depends(authenticate)):
-    return await LLM.update_model_in_db(access_token=user['session_id'], user_id=user['sub'], update=model.to_dict())
+async def create_model(model: dict, user = Depends(authenticate)):
+    print(f"Model: {model}")
+    print(f"User: {user}")
+    model_dict = LLM.from_dict(model).to_dict() # required to parse correctly
+    return await LLM.update_model_in_db(access_token=user['session_id'], user_id=user['sub'], update=model_dict)
 
 @app.get('/models')
 @error_handler
