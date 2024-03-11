@@ -29,6 +29,16 @@ from services.model import LLM
 
 
 app = FastAPI(title="Gagarin", description="A service for creating and managing chatbots and agents", version="0.0.1")
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    # Log the request here
+    print(f"Request: {request.method} {request.url}")
+    print(f"Headers: {request.headers}")
+    print(f"Body: {await request.body()}")
+    
+    response = await call_next(request)
+    
+    return response
 
 # Gagarin API
 @app.get('/')
