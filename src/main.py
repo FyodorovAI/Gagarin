@@ -58,12 +58,12 @@ def health_check():
 async def create_provider(provider: ProviderModel, user = Depends(authenticate)):
     print(f"ProviderModel: {provider}")
     print(f"User: {user}")
-    if provider.api_url.contains("__IP__"):        
+    if "__IP__" in provider.api_url:        
         # Get the IP address of the user
         ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         print(f"IP: {ip}")
         # Replace the API URL with the new IP
-        provider.api_url = re.sub("__IP__", ip, provider.api_url)
+        provider.api_url = provider.api_url.replace("__IP__", ip)
         print(f"New API URL: {provider.api_url}")
     return await Provider.save_provider_in_db(
         access_token=user['session_id'],
