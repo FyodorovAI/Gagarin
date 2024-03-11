@@ -97,8 +97,8 @@ async def delete_provider(id: str, user = Depends(authenticate)):
 async def create_model(model: dict, user = Depends(authenticate)):
     print(f"Model: {model}")
     print(f"User: {user}")
-    model_dict = LLM.from_dict(model).to_dict() # required to parse correctly
-    return await LLM.update_model_in_db(access_token=user['session_id'], user_id=user['sub'], update=model_dict)
+    model_obj = LLM.from_dict(model)
+    return await LLM.save_model_in_db(access_token=user['session_id'], user_id=user['sub'], model=model_obj)
 
 @app.get('/models')
 @error_handler
