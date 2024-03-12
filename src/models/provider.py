@@ -4,10 +4,10 @@ from typing import Literal
 Provider = Literal['openai', 'mistral', 'ollama']
 
 class ProviderModel(BaseModel):
-    id: str = None
+    id: str | None = None
     name: Provider
-    api_key: str | None
-    api_url: HttpUrl | None
+    api_key: str | None = None
+    api_url: HttpUrl | None = None
 
     def to_dict(self):
         return {
