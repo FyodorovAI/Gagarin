@@ -6,7 +6,7 @@ Provider = Literal['openai', 'mistral', 'ollama']
 class ProviderModel(BaseModel):
     id: str = None
     name: Provider
-    api_key: str
+    api_key: str | None
     api_url: HttpUrl | None
 
     def to_dict(self):
