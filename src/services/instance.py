@@ -28,6 +28,7 @@ class Instance(InstanceModel):
         agent.prompt = prompt
         agent.model = model.base_model
         agent.api_key = provider.api_key
+        agent.api_url = provider.api_url
         for index, tool in enumerate(agent.tools):
             if isinstance(tool, str):
                 agent.tools[index] = Tool.get_by_name_and_user_id(access_token, tool, user_id)

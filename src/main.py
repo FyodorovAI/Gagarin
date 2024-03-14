@@ -55,16 +55,19 @@ def health_check():
 # Providers endpoints
 @app.post('/providers')
 @error_handler
-async def create_provider(provider: ProviderModel, user = Depends(authenticate)):
-    print(f"ProviderModel: {provider}")
+async def create_provider(provider: ProviderModel, request: Request, user = Depends(authenticate)):
     print(f"User: {user}")
-    if "__IP__" in str(provider.api_url):        
+    if "localhost" in str(provider.api_url):  
+        print("Replacing IP in API URL")      
         # Get the IP address of the user
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-        print(f"IP: {ip}")
-        # Replace the API URL with the new IP
-        provider.api_url = HttpUrl(str(provider.api_url).replace("__IP__", ip))
-        print(f"New API URL: {provider.api_url}")
+        print(f"Request: {request.headers}")
+        if "X-Forwarded-For"  in request.headers:
+            ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            print(f"IP: {ip}")
+            # Replace the API URL with the new IP
+            provider.api_url = HttpUrl(str(provider.api_url).replace("localhost", ip))
+            print(f"New API URL: {provider.api_url}")
+    print(f"ProviderModel: {provider}")
     return await Provider.save_provider_in_db(
         access_token=user['session_id'],
         provider=provider,
