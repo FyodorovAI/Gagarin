@@ -7,6 +7,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import StreamingResponse
 from datetime import datetime
 from typing import List
+from pydantic import HttpUrl
 import uvicorn
 import yaml
 import re
