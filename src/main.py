@@ -62,7 +62,9 @@ async def create_provider(provider: ProviderModel, request: Request, user = Depe
         # Get the IP address of the user
         print(f"Request: {request.headers}")
         if "X-Forwarded-For"  in request.headers:
-            ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            ip = request.headers.get('X-Forwarded-For', 'localhost')
+            if ip == 'localhost' and hasattr(request, 'remote_addr'):
+                ip = request.remote_addr
             print(f"IP: {ip}")
             # Replace the API URL with the new IP
             provider.api_url = HttpUrl(str(provider.api_url).replace("localhost", ip))
