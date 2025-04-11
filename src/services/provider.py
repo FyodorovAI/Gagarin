@@ -41,8 +41,10 @@ class Provider(ProviderModel):
                     provider.api_url = "https://openrouter.ai/api/v1"
                 else:
                     raise ValueError('No URL provided when creating a provider')
+            print('Setting provider api_url to', provider.api_url)
             provider_dict = provider.to_dict()
             provider_dict['user_id'] = user_id
+            print('Saving provider', provider_dict)
             result = supabase.table('providers').upsert(provider_dict).execute()
             provider = result.data[0]
             print('Saved provider', provider)
