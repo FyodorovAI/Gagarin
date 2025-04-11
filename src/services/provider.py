@@ -87,6 +87,7 @@ class Provider(ProviderModel):
         try:
             supabase = get_supabase(access_token)
             result = supabase.table('providers').select('*').eq('user_id', user_id).eq('name', name).limit(1).execute()
+            print('Result of getting provider:', result)
             provider_dict = result.data[0]
             print('Fetched provider', provider_dict)
             provider_dict['id'] = str(provider_dict['id'])
