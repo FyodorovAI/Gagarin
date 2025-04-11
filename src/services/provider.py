@@ -29,6 +29,7 @@ class Provider(ProviderModel):
     async def save_provider_in_db(access_token: str, provider: ProviderModel, user_id: str) -> dict:
         try:
             supabase = get_supabase(access_token)
+            print('Got access token for saving provider')
             provider.name = provider.name.lower()
             if not provider.api_url or provider.api_url == "":
                 if provider.name == "openai":
@@ -92,7 +93,8 @@ class Provider(ProviderModel):
             raise ValueError('User ID is required')
         try:
             supabase = get_supabase(access_token)
-            result = supabase.table('providers').select('*').eq('user_id', user_id).eq('name', name).limit(1).execute()
+            print('Got access token for getting provider')
+            result = supabase.table('providers').select('*').eq('user_id', user_id).eq('name', name.lower()).limit(1).execute()
             print('Result of getting provider:', result)
             provider_dict = result.data[0]
             print('Fetched provider', provider_dict)
@@ -109,7 +111,7 @@ class Provider(ProviderModel):
             provider = await Provider.get_provider(access_token, user_id, name)
             return provider
         except Exception as e:            
-            provider = ProviderModel(name=name)
+            provider = ProviderModel(name=name.lower())
             provider = await Provider.save_provider_in_db(access_token, provider, user_id)
             return provider
 

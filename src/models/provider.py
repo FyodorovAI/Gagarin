@@ -11,7 +11,7 @@ class ProviderModel(BaseModel):
 
     def to_dict(self):
         return {
-            'name': self.name,
+            'name': self.name.lower(),
             'api_key': self.api_key,
             'api_url': str(self.api_url),
         }
@@ -21,7 +21,7 @@ class ProviderModel(BaseModel):
         api_url = data['api_url'] if 'api_url' in data else None
         api_key = data['api_key'] if 'api_key' in data else ""
         return ProviderModel(
-            name=name,
+            name=name.lower(),
             api_key=api_key,
             api_url=api_url,
         )
