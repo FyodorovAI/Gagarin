@@ -29,7 +29,7 @@ class LLM(LLMModel):
     async def save_model_in_db(access_token: str, user_id: str, model: LLMModel) -> dict:
         try:
             supabase = get_supabase(access_token)
-            provider = await Provider.get_provider(access_token, user_id, model.provider)
+            provider = await Provider.get_or_create_provider(access_token, user_id, model.provider)
             model_dict = model.to_dict()
             model_dict['provider'] = provider.id
             model_dict['user_id'] = user_id

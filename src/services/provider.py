@@ -96,6 +96,16 @@ class Provider(ProviderModel):
         except Exception as e:
             print('Error fetching provider', str(e))
             raise e
+        
+    @staticmethod
+    async def get_or_create_provider(access_token: str, user_id: str, name: str) -> ProviderModel:
+        try:
+            provider = await Provider.get_provider(access_token, user_id, name)
+        except Exception as e:            
+            provider = ProviderModel(name=name)
+            provider = await Provider.save_provider_in_db(access_token, provider, user_id)
+            return provider
+        
 
     @staticmethod
     async def get_providers(limit: int = 10, created_at_lt: datetime = datetime.now()) -> [dict]:
