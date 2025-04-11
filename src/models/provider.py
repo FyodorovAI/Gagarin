@@ -10,11 +10,15 @@ class ProviderModel(BaseModel):
     api_url: HttpUrl | None = None
 
     def to_dict(self):
-        return {
+        dict = {
             'name': self.name.lower(),
-            'api_key': self.api_key,
             'api_url': str(self.api_url),
         }
+        if self.api_key is not None:
+            dict['api_key'] = self.api_key
+        if self.id is not None:
+            dict['id'] = self.id
+        return dict
 
     def from_dict(data):
         name = data['name'] if 'name' in data else None
