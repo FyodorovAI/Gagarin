@@ -93,8 +93,11 @@ class Provider(ProviderModel):
             raise ValueError('User ID is required')
         try:
             supabase = get_supabase(access_token)
-            print('Got access token for getting provider')
-            result = supabase.table('providers').select('*').eq('user_id', user_id).eq('name', name.lower()).limit(1).execute()
+            print('Got access token for getting provider:', access_token)
+            result = supabase.table('providers').select('*')\
+                .eq('user_id', user_id)\
+                .eq('name', name.lower())\
+                .limit(1).execute()
             print('Result of getting provider:', result)
             provider_dict = result.data[0]
             print('Fetched provider', provider_dict)
