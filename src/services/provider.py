@@ -35,6 +35,10 @@ class Provider(ProviderModel):
                     provider.api_url = "https://api.openai.com/v1"
                 elif provider.name == "mistral":
                     provider.api_url = "https://api.mistral.ai/v1"
+                elif provider.name == "ollama":
+                    provider.api_url = "http://localhost:11434/v1"
+                elif provider.name == "openrouter":
+                    provider.api_url = "https://openrouter.ai/api/v1"
                 else:
                     raise ValueError('No URL provided when creating a provider')
             provider_dict = provider.to_dict()
