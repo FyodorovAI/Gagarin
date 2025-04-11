@@ -19,7 +19,7 @@ class ProviderModel(BaseModel):
     def from_dict(data):
         name = data['name'] if 'name' in data else None
         api_url = data['api_url'] if 'api_url' in data else None
-        api_key = data['api_key'] if 'api_key' in data else ""
+        api_key = data['api_key'] if 'api_key' in data else None
         return ProviderModel(
             name=name.lower(),
             api_key=api_key,
