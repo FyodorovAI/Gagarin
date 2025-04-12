@@ -28,8 +28,9 @@ class Provider(ProviderModel):
     @staticmethod
     async def save_provider_in_db(access_token: str, provider: ProviderModel, user_id: str) -> dict:
         try:
+            print('Access token for saving provider:', access_token)
             supabase = get_supabase(access_token)
-            print('Got access token for saving provider:', access_token)
+            print('Got client for saving provider:', supabase)
             provider.name = provider.name.lower()
             if not provider.api_url or provider.api_url == "":
                 if provider.name == "openai":
