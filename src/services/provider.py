@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 import re
 from datetime import datetime
-from models.provider import ProviderModel
+from models.provider import ProviderModel, Provider as ProviderType
 from supabase import Client
 from fyodorov_utils.config.supabase import get_supabase
 
@@ -33,13 +33,13 @@ class Provider(ProviderModel):
             print('Got client for saving provider:', supabase)
             provider.name = provider.name.lower()
             if not provider.api_url or provider.api_url == "":
-                if provider.name == "openai":
+                if provider.name == ProviderType.openai:
                     provider.api_url = "https://api.openai.com/v1"
-                elif provider.name == "mistral":
+                elif provider.name == ProviderType.mistral:
                     provider.api_url = "https://api.mistral.ai/v1"
-                elif provider.name == "ollama":
+                elif provider.name == ProviderType.ollama:
                     provider.api_url = "http://localhost:11434/v1"
-                elif provider.name == "openrouter":
+                elif provider.name == ProviderType.openrouter:
                     provider.api_url = "https://openrouter.ai/api/v1"
                 else:
                     raise ValueError('No URL provided when creating a provider')
