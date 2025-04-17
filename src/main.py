@@ -151,33 +151,33 @@ async def create_agent_from_yaml(request: Request, user = Depends(authenticate))
 
 @app.get('/agents')
 @error_handler
-def get_agents(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):    
+async def get_agents(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):    
     return Agent.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
 
 @app.get('/agents/{id}')
 @error_handler
-def get_agent(id: str, user = Depends(authenticate)):
+async def get_agent(id: str, user = Depends(authenticate)):
     return Agent.get_in_db(id)
 
 @app.put('/agents/{id}')
 @error_handler
-def update_agent(id: str, agent: dict, user = Depends(authenticate)):
+async def update_agent(id: str, agent: dict, user = Depends(authenticate)):
     return Agent.update_in_db(id, agent)
 
 @app.delete('/agents/{id}')
 @error_handler
-def delete_agent(id: str, user = Depends(authenticate)):
+async def delete_agent(id: str, user = Depends(authenticate)):
     return Agent.delete_in_db(id)
 
 @app.get('/agents/{id}/tools')
 @error_handler
-def get_agent_tools(id: str, user = Depends(authenticate)):
+async def get_agent_tools(id: str, user = Depends(authenticate)):
     return Agent.get_agent_tools(user['session_id'], id)
 
 # Instances endpoints
 @app.post('/instances')
 @error_handler
-def create_instance(instance: InstanceModel, user = Depends(authenticate)):
+async def create_instance(instance: InstanceModel, user = Depends(authenticate)):
     if instance.agent_id not in [str(agent["id"]) for agent in Agent.get_all_in_db()]:
         raise HTTPException(status_code=404, detail="Agent not found")
     Instance.create_in_db(instance)

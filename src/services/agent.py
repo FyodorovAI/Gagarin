@@ -9,7 +9,7 @@ supabase: Client = get_supabase()
 
 class Agent(AgentModel):
     @staticmethod    
-    def create_in_db(access_token: str, agent: AgentModel) -> str:
+    async def create_in_db(access_token: str, agent: AgentModel) -> str:
         try:
             supabase = get_supabase(access_token)
             result = supabase.table('agents').upsert(agent.to_dict()).execute()
@@ -20,7 +20,7 @@ class Agent(AgentModel):
             raise e
 
     @staticmethod    
-    def create_agent_in_db(access_token: str, agent: dict, user_id: str) -> str:
+    async def create_agent_in_db(access_token: str, agent: dict, user_id: str) -> str:
         try:
             supabase = get_supabase(access_token)
             agent['user_id'] = user_id
@@ -32,7 +32,7 @@ class Agent(AgentModel):
             raise e
 
     @staticmethod
-    def update_in_db(id: str, agent: dict) -> dict:
+    async def update_in_db(id: str, agent: dict) -> dict:
         if not id:
             raise ValueError('Agent ID is required')
         try:
@@ -43,7 +43,7 @@ class Agent(AgentModel):
             raise
 
     @staticmethod
-    def delete_in_db(id: str) -> bool:
+    async def delete_in_db(id: str) -> bool:
         if not id:
             raise ValueError('Agent ID is required')
         try:
@@ -72,7 +72,7 @@ class Agent(AgentModel):
             raise e
 
     @staticmethod
-    def get_all_in_db(limit: int = 10, created_at_lt: datetime = datetime.now()) -> [dict]:
+    async def get_all_in_db(limit: int = 10, created_at_lt: datetime = datetime.now()) -> [dict]:
         try:
             result = supabase.from_('agents') \
                 .select("*") \
