@@ -3,6 +3,7 @@ from typing import Union
 from datetime import datetime, timedelta
 from supabase import  Client
 from fyodorov_utils.config.supabase import get_supabase
+from fyodorov_llm_agents.tools.tool import Tool as ToolModel
 from .model import LLM
 
 supabase: Client = get_supabase()
@@ -108,3 +109,34 @@ class Agent(AgentModel):
         agent = await Agent.get_in_db(access_token, agent_id)
         tools = agent.tools
         return tools
+
+    @staticmethod
+    async def set_agent_tools(access_token: str, agent_id: str, tool_ids: list[ToolModel]) -> list:
+        if not tool_ids:
+            raise ValueError('Agent IDs are required')
+        supabase = get_supabase(access_token)
+        result = []
+        for tool_id in tool_ids:
+            # Check if tool is valid and exists in the database
+            tool_result = supabase.table('mcp_tools').select('*').eq('id', tool_id).limit(1).execute()
+            if not tool_result.data:
+                print(f"Tool with ID {tool_id} does not exist.")
+                continue
+            supabase.table('agent_mcp_tools').insert({'mcp_tool_id': tool_id, 'agent_id': agent_id}).execute()
+            print('Inserted tool', tool_id, 'for agent', agent_id)
+            result.append(tool_id)
+        return result
+
+    @staticmethod
+    async def delete_agent_tool(access_token: str, agent_id: str, tool_id: str) -> list:
+        if not agent_id:
+            raise ValueError('Agent ID is required')
+        if not tool_id:
+            raise ValueError('Tool ID is required')
+        try:
+            supabase = get_supabase(access_token)
+            result = supabase.table('agent_mcp_tools').delete().eq('agent_id', agent_id).eq('mcp_tool_id', tool_id).execute()
+            return True
+        except Exception as e:
+            print('Error deleting agent tool', str(e))
+            raise e
