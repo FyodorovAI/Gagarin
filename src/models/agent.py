@@ -1,4 +1,4 @@
-from pydantic import BaseModel, HttpUrl, Field
+from pydantic import HttpUrl
 import re
 from typing import Literal
 from models.provider import Provider
@@ -12,7 +12,7 @@ APIUrlTypes = Literal['openapi']
 
 class Tools(TypedDict):
     tenant: HttpUrl
-    tools: list[str]
+    tools: list[int]
 
 class Rag(TypedDict):
     host: HttpUrl

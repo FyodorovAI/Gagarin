@@ -169,6 +169,11 @@ def update_agent(id: str, agent: dict, user = Depends(authenticate)):
 def delete_agent(id: str, user = Depends(authenticate)):
     return Agent.delete_in_db(id)
 
+@app.get('/agents/{id}/tools')
+@error_handler
+def get_agent_tools(id: str, user = Depends(authenticate)):
+    return Agent.get_agent_tools(user['session_id'], id)
+
 # Instances endpoints
 @app.post('/instances')
 @error_handler

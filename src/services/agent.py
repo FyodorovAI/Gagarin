@@ -98,3 +98,13 @@ class Agent(AgentModel):
         print('Saving agent', agent_dict)
         agent = Agent.create_agent_in_db(access_token, agent_dict, user_id)
         return agent
+
+    @staticmethod
+    async def get_agent_tools(access_token: str, agent_id: str) -> list:
+        if not agent_id:
+            raise ValueError('Agent ID is required')
+        supabase = get_supabase(access_token)
+        result = supabase.table('agent_mcp_tools').select('*').eq('agent_id', agent_id).execute()
+        agent = await Agent.get_in_db(access_token, agent_id)
+        tools = agent.tools
+        return tools
