@@ -176,13 +176,13 @@ async def get_agent_tools(id: str, user = Depends(authenticate)):
 
 @app.post('/agents/{id}/tools')
 @error_handler
-async def get_agent_tools(id: str, tools: list[ToolModel], user = Depends(authenticate)):
-    return Agent.set_agent_tools(user['session_id'], id, tools)
+async def assign_agent_tools(id: str, tools: list[ToolModel], user = Depends(authenticate)):
+    return Agent.assign_agent_tools(user['session_id'], id, tools)
 
 @app.delete('/agents/{id}/tools/{tool_id}')
 @error_handler
-async def delete_agent_tool(id: str, tool_id: str, user = Depends(authenticate)):
-    return Agent.delete_agent_tool(user['session_id'], id, tool_id)
+async def remove_agent_tool(id: str, tool_id: str, user = Depends(authenticate)):
+    return Agent.delete_agent_tool_connection(user['session_id'], id, tool_id)
 
 # Instances endpoints
 @app.post('/instances')
@@ -205,12 +205,12 @@ def get_instance(id: str, user = Depends(authenticate)):
 
 @app.put('/instances/{id}')
 @error_handler
-def update_instance(id: str, instance: dict, user = Depends(authenticate)):
+async def update_instance(id: str, instance: dict, user = Depends(authenticate)):
     return Instance.update_in_db(id, instance)
 
 @app.delete('/instances/{id}')
 @error_handler
-def delete_instance(id: str, user = Depends(authenticate)):
+async def delete_instance(id: str, user = Depends(authenticate)):
     return Instance.delete_in_db(id)
 
 # Chat via websocket

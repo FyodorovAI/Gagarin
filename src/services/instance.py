@@ -80,7 +80,7 @@ class Instance(InstanceModel):
             raise
 
     @staticmethod
-    def delete_in_db(id: str) -> bool:
+    async def delete_in_db(id: str) -> bool:
         if not id:
             raise ValueError('Instance ID is required')
         try:

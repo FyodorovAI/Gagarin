@@ -111,7 +111,7 @@ class Agent(AgentModel):
         return tools
 
     @staticmethod
-    async def set_agent_tools(access_token: str, agent_id: str, tool_ids: list[ToolModel]) -> list:
+    async def assign_agent_tools(access_token: str, agent_id: str, tool_ids: list[ToolModel]) -> list:
         if not tool_ids:
             raise ValueError('Agent IDs are required')
         supabase = get_supabase(access_token)
@@ -128,7 +128,7 @@ class Agent(AgentModel):
         return result
 
     @staticmethod
-    async def delete_agent_tool(access_token: str, agent_id: str, tool_id: str) -> list:
+    async def delete_agent_tool_connection(access_token: str, agent_id: str, tool_id: str) -> list:
         if not agent_id:
             raise ValueError('Agent ID is required')
         if not tool_id:

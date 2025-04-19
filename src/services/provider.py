@@ -30,16 +30,15 @@ class Provider(ProviderModel):
         try:
             print('Access token for saving provider:', access_token)
             supabase = get_supabase(access_token)
-            print('Got client for saving provider:', supabase)
             provider.name = provider.name.lower()
             if not provider.api_url or provider.api_url == "":
-                if provider.name == ProviderType.openai:
+                if provider.name == "openai":
                     provider.api_url = "https://api.openai.com/v1"
-                elif provider.name == ProviderType.mistral:
+                elif provider.name == "mistral":
                     provider.api_url = "https://api.mistral.ai/v1"
-                elif provider.name == ProviderType.ollama:
+                elif provider.name == "ollama":
                     provider.api_url = "http://localhost:11434/v1"
-                elif provider.name == ProviderType.openrouter:
+                elif provider.name == "openrouter":
                     provider.api_url = "https://openrouter.ai/api/v1"
                 else:
                     raise ValueError('No URL provided when creating a provider')
