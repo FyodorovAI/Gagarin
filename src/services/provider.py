@@ -47,13 +47,9 @@ class Provider(ProviderModel):
             provider_dict['user_id'] = user_id
             print('Provider dict before merging existing row:', provider_dict)
             # Check if the provider already exists based on name and user_id
-            existing_provider = supabase.table('providers').select('*')\
-                .eq('name', provider.name)\
-                .eq('user_id', user_id)\
-                .limit(1).execute()
-            if existing_provider.data:
-                tmp = existing_provider.data[0]
-                tmp = {**tmp, **provider_dict}
+            existing_provider = Provider.get_provider(access_token, user_id, provider.name)
+            if existing_provider:
+                tmp = {**existing_provider.to_dict(), **provider_dict}
                 provider_dict = tmp
             print('Saving provider', provider_dict)
             result = supabase.table('providers').upsert(provider_dict).execute()
