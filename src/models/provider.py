@@ -14,7 +14,7 @@ class ProviderModel(BaseModel):
             'name': self.name.lower(),
         }
         if self.api_url is not None:
-            dict['api_url'] = self.api_url
+            dict['api_url'] = str(self.api_url)
         if self.api_key is not None:
             dict['api_key'] = self.api_key
         if self.id is not None:
