@@ -22,7 +22,7 @@ from services.instance import Instance
 from services.provider import Provider
 # from models.agent import AgentModel
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
-from fyodorov_llm_agents.tools.tool import Tool as ToolModel
+from fyodorov_llm_agents.tools.tool import MCPTool as ToolModel
 from models.instance import InstanceModel
 from models.provider import ProviderModel
 from services.provider import Provider
@@ -227,7 +227,7 @@ async def websocket_endpoint(id: str, websocket: WebSocket):
         # ...
         model_output = await instance.use_custom_library(data)
         await websocket.send_text(model_output)
-        
+
 # Chat
 @app.get("/instances/{id}/chat")
 async def chat(id: str, message: dict = Body(..., media_type="application/json"), user = Depends(authenticate)):
@@ -235,7 +235,6 @@ async def chat(id: str, message: dict = Body(..., media_type="application/json")
     instance = Instance(**instance_model.to_dict())
     res = await instance.chat_w_fn_calls(message["input"], access_token=user['session_id'], user_id=user['sub'])
     return res
-
 
 @app.get("/instances/{id}/stream")
 async def multiple_function_calls(id: str, input: str = Body(..., embed=True), user = Depends(authenticate)):
