@@ -47,7 +47,7 @@ class Provider(ProviderModel):
             provider_dict['user_id'] = user_id
             print('Provider dict before merging existing row:', provider_dict)
             # Check if the provider already exists based on name and user_id
-            existing_provider = Provider.get_provider(access_token, user_id, provider.name)
+            existing_provider = await Provider.get_provider(access_token, user_id, provider.name)
             if existing_provider:
                 tmp = {**existing_provider.to_dict(), **provider_dict}
                 provider_dict = tmp
