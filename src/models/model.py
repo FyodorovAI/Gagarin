@@ -29,8 +29,9 @@ class LLMModel(BaseModel):
         input_dict = {
             "name": data['name'],
             "provider": data['provider'],
-            "base_model": data['model_info']['base_model'],
         }
+        if 'model_info' in data and 'base_model' in data['model_info']:
+            input_dict['base_model'] = data['model_info']['base_model']
         if 'params' in data:
             input_dict['params'] = data['params']
         if 'mode' in data:
