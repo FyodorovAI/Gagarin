@@ -51,7 +51,7 @@ class Instance(InstanceModel):
         try:
             supabase = get_supabase(access_token)
             print("Creating instance in DB:", instance.to_dict())
-            result = await supabase.table('instances').upsert(instance.to_dict()).execute()
+            result = supabase.table('instances').upsert(instance.to_dict()).execute()
             print(f"Result of query: {result}")
             instance_dict = result.data[0]
             instance_dict["id"] = str(instance_dict["id"])
