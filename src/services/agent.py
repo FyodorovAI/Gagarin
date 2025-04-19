@@ -91,10 +91,11 @@ class Agent(AgentModel):
     @staticmethod
     async def save_from_dict(access_token: str, user_id: str, data):
         agent = AgentModel.from_dict(data)
+        agent_dict = agent.to_dict()
         model_name = data['model']
         model = await LLM.get_model(access_token, user_id, model_name)
-        agent_dict = agent.to_dict()
-        agent_dict['model_id'] = model.id
+        if model:
+            agent_dict['model_id'] = model.id
         del agent_dict['model']
         print('Saving agent', agent_dict)
         agent = await Agent.create_agent_in_db(access_token, agent_dict, user_id)

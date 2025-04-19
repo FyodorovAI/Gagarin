@@ -58,21 +58,20 @@ class LLM(LLMModel):
 
     @staticmethod
     async def get_model(access_token: str, user_id: str = None, name: str = None, id: str = None) -> LLMModel:
-        print(f"Getting model with id: {id} and name: {name} and user_id: {user_id}")
         try:
             supabase = get_supabase(access_token)
             if id:
+                print(f"Getting model with id: {id}")
                 result = supabase.table('models').select('*').eq('id', id).execute()
             elif user_id and name:
+                print(f"Getting model with name: {name} and user_id: {user_id}")
                 result = supabase.table('models').select('*').eq('user_id', user_id).eq('name', name).execute()
             else:
-                raise ValueError('Some form of id is required to get a model')
+                raise ValueError('Some form of id is required to retrieve a model')
             print('Fetched model', result)
-            if not result.data:
+            if not result or not result.data:
                 return None
             model_dict = result.data[0]
-            if not result.data:
-                return None
             model_dict['id'] = str(model_dict['id'])
             model_dict['provider'] = str(model_dict['provider'])
             model = LLMModel(**model_dict)
