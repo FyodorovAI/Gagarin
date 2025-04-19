@@ -45,6 +45,16 @@ class Provider(ProviderModel):
             print('Setting provider api_url to', provider.api_url)
             provider_dict = provider.to_dict()
             provider_dict['user_id'] = user_id
+            print('Provider dict before merging existing row:', provider_dict)
+            # Check if the provider already exists based on name and user_id
+            existing_provider = supabase.table('providers').select('*')\
+                .eq('name', provider.name)\
+                .eq('user_id', user_id)\
+                .limit(1).execute()
+            if existing_provider.data:
+                tmp = existing_provider.data[0]
+                tmp = {**tmp, **provider_dict}
+                provider_dict = tmp
             print('Saving provider', provider_dict)
             result = supabase.table('providers').upsert(provider_dict).execute()
             provider = result.data[0]
