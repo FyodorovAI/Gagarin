@@ -97,7 +97,7 @@ class Agent(AgentModel):
         agent_dict['model_id'] = model.id
         del agent_dict['model']
         print('Saving agent', agent_dict)
-        agent = Agent.create_agent_in_db(access_token, agent_dict, user_id)
+        agent = await Agent.create_agent_in_db(access_token, agent_dict, user_id)
         return agent
 
     @staticmethod
