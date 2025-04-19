@@ -50,6 +50,7 @@ class Instance(InstanceModel):
     def create_in_db(access_token: str, instance: InstanceModel) -> dict:
         try:
             supabase = get_supabase(access_token)
+            print("Creating instance in DB:", instance.to_dict())
             result = supabase.table('instances').upsert(instance.to_dict()).execute()
             print(f"Result of query: {result}")
             instance_dict = result.data[0]
