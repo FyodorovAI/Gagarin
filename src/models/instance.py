@@ -24,12 +24,12 @@ class InstanceModel(BaseModel):
 
     def to_dict(self) -> dict:
         data = {
-            'agent_id': self.agent_id,
+            'agent_id': str(self.agent_id),
             'title': self.title,
             'chat_history': self.chat_history,
         }
         if self.id is not None:
-            data['id'] = self.id
+            data['id'] = str(self.id)
         return data
 
     @staticmethod

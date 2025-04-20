@@ -49,11 +49,18 @@ class Instance(InstanceModel):
     @staticmethod    
     async def create_in_db(access_token: str, instance: InstanceModel) -> dict:
         try:
-            supabase = get_supabase(access_token)
-            print("Creating instance in DB:", instance.to_dict())
-            result = supabase.table('instances').upsert(instance.to_dict()).execute()
-            print(f"Result of query: {result}")
-            instance_dict = result.data[0]
+            existing_instance = Instance.get_by_title_and_agent(access_token, instance.title, instance.agent_id)
+            if existing_instance:
+                print('Instance already exists, updating:', existing_instance.to_dict())
+                instance_dict = (**existing_instance.to_dict(), **instance.to_dict())
+                instance_dict["agent_id"] = str(instance_dict["agent_id"])
+                instance_dict["id"] = str(instance_dict["id"])
+                Instance.update_in_db(instance.id, instance_dict)
+                instance_dict = instance.to_dict()
+            else:
+                print("Creating instance in DB:", instance.to_dict())
+                result = Instance.update_in_db(instance.id, instance.to_dict())
+                instance_dict = result.data[0]
             instance_dict["id"] = str(instance_dict["id"])
             instance_dict["agent_id"] = str(instance_dict["agent_id"])
             return instance_dict
@@ -61,8 +68,8 @@ class Instance(InstanceModel):
             print(f"An error occurred while creating instance: {e}")
             if e.code == '23505':
                 print('Instance already exists')
-                instance = Instance.get_by_title_and_agent(access_token, instance.title, instance.agent_id)
-                return instance
+                instance_dict = Instance.get_by_title_and_agent(access_token, instance.title, instance.agent_id)
+                return instance_dict
             print('Error creating instance', str(e))
             raise e
 
@@ -86,13 +93,17 @@ class Instance(InstanceModel):
             raise ValueError('Instance ID is required')
         try:
             result = supabase.table('instances').delete().eq('id', id).execute()
-            return True
+            print('Deleted instance', result)
+            if not result.data:
+                raise ValueError('Instance ID not found')
+            else:
+                return True
         except Exception as e:
             print('Error deleting instance', str(e))
             raise e
 
     @staticmethod
-    def get_by_title_and_agent(access_token: str, title: str, agent_id: str) -> dict:
+    def get_by_title_and_agent(title: str, agent_id: str) -> dict:
         if not title:
             raise ValueError('Instance title is required')
         if not agent_id:
@@ -100,8 +111,6 @@ class Instance(InstanceModel):
         try:
             result = supabase.table('instances').select('*').eq('title', title).eq('agent_id', agent_id).limit(1).execute()
             instance_dict = result.data[0]
-            instance_dict["agent_id"] = str(instance_dict["agent_id"])
-            instance_dict["id"] = str(instance_dict["id"])
             print(f"Fetched instance: {instance_dict}")
             return instance_dict
         except Exception as e:
