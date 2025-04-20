@@ -42,4 +42,5 @@ class LLMModel(BaseModel):
             input_dict['output_cost_per_token'] = data['output_cost_per_token']
         if 'max_tokens' in data:
             input_dict['max_tokens'] = data['max_tokens']
+        print('Input dict for LLMModel:', input_dict)
         return LLMModel(**input_dict)
