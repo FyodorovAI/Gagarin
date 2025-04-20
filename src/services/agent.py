@@ -107,9 +107,15 @@ class Agent(AgentModel):
             raise ValueError('Agent ID is required')
         supabase = get_supabase(access_token)
         result = supabase.table('agent_mcp_tools').select('*').eq('agent_id', agent_id).execute()
-        agent = await Agent.get_in_db(access_token, agent_id)
-        tools = agent.tools
-        return tools
+        tool_ids = [item['mcp_tool_id'] for item in result.data if 'mcp_tool_id' in item]
+        result = []
+        for tool_id in tool_ids:
+            tool = supabase.table('mcp_tools').select('*').eq('id', tool_id).limit(1).execute()
+            if tool and tool.data:
+                tool_dict = tool.data[0]
+                tool_dict['id'] = str(tool_dict['id'])
+                result.append(tool_dict)
+        return result
 
     @staticmethod
     async def assign_agent_tools(access_token: str, agent_id: str, tool_ids: list[ToolModel]) -> list:
