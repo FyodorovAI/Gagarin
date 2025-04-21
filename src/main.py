@@ -22,7 +22,7 @@ from services.instance import Instance
 from services.provider import Provider
 # from models.agent import AgentModel
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
-from fyodorov_llm_agents.tools.mcp_tool import MCPTool as ToolModel
+from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
 from models.instance import InstanceModel
 from models.provider import ProviderModel
 from services.provider import Provider
