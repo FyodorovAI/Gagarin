@@ -6,7 +6,8 @@ from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from .agent import Agent
 from .provider import Provider
 
-from fyodorov_utils.services.tool import Tool
+from fyodorov_llm_agents.tools.mcp_tool_service import MCPTool as Tool
+from fyodorov_llm_agents.tools.mcp_tool_model import Agent as AgentModel
 from .model import LLM
 from models.model import LLMModel
 
