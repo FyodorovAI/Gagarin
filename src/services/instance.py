@@ -1,6 +1,4 @@
-from fastapi import WebSocket
-from typing import Union
-from datetime import datetime, timedelta
+from datetime import datetime
 from supabase import Client
 from fyodorov_utils.config.supabase import get_supabase
 from models.instance import InstanceModel
@@ -8,7 +6,6 @@ from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from .agent import Agent
 from .provider import Provider
 
-from fyodorov_llm_agents.agents.openai import OpenAI
 from fyodorov_utils.services.tool import Tool
 from .model import LLM
 from models.model import LLMModel
@@ -46,13 +43,13 @@ class Instance(InstanceModel):
         self.create_in_db(access_token=access_token, instance=self)
         return res
 
-    @staticmethod    
+    @staticmethod
     async def create_in_db(access_token: str, instance: InstanceModel) -> dict:
         try:
             existing_instance = Instance.get_by_title_and_agent(access_token, instance.title, instance.agent_id)
             if existing_instance:
                 print('Instance already exists, updating:', existing_instance.to_dict())
-                instance_dict = (**existing_instance.to_dict(), **instance.to_dict())
+                instance_dict = {**existing_instance.to_dict(), **instance.to_dict()}
                 instance_dict["agent_id"] = str(instance_dict["agent_id"])
                 instance_dict["id"] = str(instance_dict["id"])
                 Instance.update_in_db(instance.id, instance_dict)
