@@ -40,7 +40,7 @@ class Instance(InstanceModel):
             "content": res["answer"]
         })
         # Update history
-        self.create_in_db(access_token=access_token, instance=self)
+        self.create_in_db(instance=self)
         return res
 
     @staticmethod
