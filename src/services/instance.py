@@ -56,10 +56,10 @@ class Instance(InstanceModel):
                         existing_instance[key] = value
                 if needs_update:
                     print('Instance already exists, will update:', existing_instance)
-                    existing_instance["agent_id"] = str(existing_instance["agent_id"])
-                    existing_instance["id"] = str(existing_instance["id"])
-                    Instance.update_in_db(existing_instance["id"], existing_instance)
-                    instance_dict = instance.to_dict()
+                    instance_dict = Instance.update_in_db(existing_instance["id"], existing_instance)
+                else:
+                    print('Instance already exists and no update needed:', existing_instance)
+                    instance_dict = existing_instance
             else:
                 print("Creating instance in DB:", instance.to_dict())
                 result = Instance.update_in_db(instance.id, instance.to_dict())
