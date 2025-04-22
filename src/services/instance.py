@@ -63,7 +63,7 @@ class Instance(InstanceModel):
             return instance_dict
         except Exception as e:
             print(f"An error occurred while creating instance: {e}")
-            if e.code == '23505':
+            if 'code' in e and e.code == '23505':
                 print('Instance already exists')
                 instance_dict = Instance.get_by_title_and_agent(instance.title, instance.agent_id)
                 return instance_dict
