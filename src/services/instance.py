@@ -50,6 +50,8 @@ class Instance(InstanceModel):
             if existing_instance:
                 needs_update = False
                 for key, value in instance.to_dict().items():
+                    if key in ["agent_id", "id"]: # cast to str
+                        value = str(value)
                     if value != existing_instance[key]:
                         print(f"Instance {key} needs updating: {value} != {existing_instance[key]}")
                         needs_update = True
