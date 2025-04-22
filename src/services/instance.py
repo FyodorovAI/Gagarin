@@ -50,8 +50,6 @@ class Instance(InstanceModel):
             if existing_instance:
                 needs_update = False
                 for key, value in instance.to_dict().items():
-                    if key in ["agent_id", "id"]: # cast to str
-                        value = str(value)
                     if value != existing_instance[key]:
                         print(f"Instance {key} needs updating: {value} != {existing_instance[key]}")
                         needs_update = True
@@ -117,6 +115,8 @@ class Instance(InstanceModel):
         try:
             result = supabase.table('instances').select('*').eq('title', title).eq('agent_id', agent_id).limit(1).execute()
             instance_dict = result.data[0]
+            instance_dict["agent_id"] = str(instance_dict["agent_id"])
+            instance_dict["id"] = str(instance_dict["id"])
             print(f"Fetched instance: {instance_dict}")
             return instance_dict
         except Exception as e:
