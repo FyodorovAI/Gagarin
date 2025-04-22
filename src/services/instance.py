@@ -44,7 +44,7 @@ class Instance(InstanceModel):
         return res
 
     @staticmethod
-    async def create_in_db(access_token: str, instance: InstanceModel) -> dict:
+    async def create_in_db(instance: InstanceModel) -> dict:
         try:
             existing_instance = Instance.get_by_title_and_agent(instance.title, instance.agent_id)
             if existing_instance:
@@ -75,6 +75,7 @@ class Instance(InstanceModel):
         if not id:
             raise ValueError('Instance ID is required')
         try:
+            print(f"Updating instance in DB with ID: {id}, data: {instance}")
             result = supabase.table('instances').update(instance).eq('id', id).execute()
             print(f"Result of update: {result}")
             instance_dict = result.data[0]

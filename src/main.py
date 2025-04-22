@@ -292,7 +292,7 @@ async def create_from_yaml(request: Request, user = Depends(authenticate)):
         if len(response["agents"]) > 0:
             for agent in response["agents"]:
                 instance = InstanceModel(agent_id=str(agent['id']), title="Default Instance")
-                new_instance = await Instance.create_in_db(user['session_id'], instance)
+                new_instance = await Instance.create_in_db(instance)
                 response["instances"].append(new_instance)
         print("Saved instances", response["instances"])
         return response
