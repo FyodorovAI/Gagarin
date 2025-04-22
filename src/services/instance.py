@@ -116,7 +116,7 @@ class Instance(InstanceModel):
             result = supabase.table('instances').select('*').eq('title', title).eq('agent_id', agent_id).limit(1).execute()
             if not result or 'data' not in result or not result.data:
                 print(f"No instance found with the given title {title} and agent ID {agent_id}: {result}")
-                raise ValueError('Instance not found')
+                return None
             instance_dict = result.data[0]
             instance_dict["agent_id"] = str(instance_dict["agent_id"])
             instance_dict["id"] = str(instance_dict["id"])
