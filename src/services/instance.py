@@ -63,6 +63,7 @@ class Instance(InstanceModel):
             else:
                 print("Creating instance in DB:", instance.to_dict())
                 result = Instance.update_in_db(instance.id, instance.to_dict())
+                print(f"Result of creating instance in DB: {result}")
                 instance_dict = result.data[0]
             instance_dict["id"] = str(instance_dict["id"])
             instance_dict["agent_id"] = str(instance_dict["agent_id"])
