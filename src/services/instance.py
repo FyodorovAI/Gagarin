@@ -62,7 +62,10 @@ class Instance(InstanceModel):
                     instance_dict = existing_instance
             else:
                 print("Creating instance in DB:", instance.to_dict())
-                result = await Instance.update_in_db(instance.id, instance.to_dict())
+                result = supabase.table('instances').upsert(instance.to_dict()).execute()
+                if not result or 'data' not in result or not result.data:
+                    print(f"Error creating instance in DB: {result}")
+                    raise ValueError('Error creating instance in DB')
                 print(f"Result of creating instance in DB: {result}")
                 instance_dict = result.data[0]
             instance_dict["id"] = str(instance_dict["id"])
