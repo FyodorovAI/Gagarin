@@ -206,7 +206,7 @@ def get_instance(id: str, user = Depends(authenticate)):
 @app.put('/instances/{id}')
 @error_handler
 async def update_instance(id: str, instance: dict, user = Depends(authenticate)):
-    return Instance.update_in_db(id, instance)
+    return await Instance.update_in_db(id, instance)
 
 @app.delete('/instances/{id}')
 @error_handler

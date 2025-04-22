@@ -56,13 +56,13 @@ class Instance(InstanceModel):
                         existing_instance[key] = value
                 if needs_update:
                     print('Instance already exists, will update:', existing_instance)
-                    instance_dict = Instance.update_in_db(existing_instance["id"], existing_instance)
+                    instance_dict = await Instance.update_in_db(existing_instance["id"], existing_instance)
                 else:
                     print('Instance already exists and no update needed:', existing_instance)
                     instance_dict = existing_instance
             else:
                 print("Creating instance in DB:", instance.to_dict())
-                result = Instance.update_in_db(instance.id, instance.to_dict())
+                result = await Instance.update_in_db(instance.id, instance.to_dict())
                 print(f"Result of creating instance in DB: {result}")
                 instance_dict = result.data[0]
             instance_dict["id"] = str(instance_dict["id"])
