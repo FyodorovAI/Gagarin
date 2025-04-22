@@ -46,7 +46,7 @@ class Instance(InstanceModel):
     @staticmethod
     async def create_in_db(access_token: str, instance: InstanceModel) -> dict:
         try:
-            existing_instance = Instance.get_by_title_and_agent(access_token, instance.title, instance.agent_id)
+            existing_instance = Instance.get_by_title_and_agent(instance.title, instance.agent_id)
             if existing_instance:
                 print('Instance already exists, updating:', existing_instance.to_dict())
                 instance_dict = {**existing_instance.to_dict(), **instance.to_dict()}
@@ -65,7 +65,7 @@ class Instance(InstanceModel):
             print(f"An error occurred while creating instance: {e}")
             if e.code == '23505':
                 print('Instance already exists')
-                instance_dict = Instance.get_by_title_and_agent(access_token, instance.title, instance.agent_id)
+                instance_dict = Instance.get_by_title_and_agent(instance.title, instance.agent_id)
                 return instance_dict
             print('Error creating instance', str(e))
             raise e
