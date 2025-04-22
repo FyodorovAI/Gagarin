@@ -63,7 +63,7 @@ class Instance(InstanceModel):
             else:
                 print("Creating instance in DB:", instance.to_dict())
                 result = supabase.table('instances').upsert(instance.to_dict()).execute()
-                if not result or 'data' not in result or not result.data:
+                if not result or not result.data:
                     print(f"Error creating instance in DB: {result}")
                     raise ValueError('Error creating instance in DB')
                 print(f"Result of creating instance in DB: {result}")
@@ -118,7 +118,7 @@ class Instance(InstanceModel):
             raise ValueError('Agent ID is required')
         try:
             result = supabase.table('instances').select('*').eq('title', title).eq('agent_id', agent_id).limit(1).execute()
-            if not result or 'data' not in result or not result.data:
+            if not result or not result.data:
                 print(f"No instance found with the given title {title} and agent ID {agent_id}: {result}")
                 return None
             instance_dict = result.data[0]
