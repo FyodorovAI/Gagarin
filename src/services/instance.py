@@ -58,7 +58,7 @@ class Instance(InstanceModel):
                     print('Instance already exists, will update:', existing_instance)
                     existing_instance["agent_id"] = str(existing_instance["agent_id"])
                     existing_instance["id"] = str(existing_instance["id"])
-                    Instance.update_in_db(existing_instance.id, existing_instance)
+                    Instance.update_in_db(existing_instance["id"], existing_instance)
                     instance_dict = instance.to_dict()
             else:
                 print("Creating instance in DB:", instance.to_dict())
