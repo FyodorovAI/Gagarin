@@ -271,14 +271,15 @@ async def create_from_yaml(request: Request, user = Depends(authenticate)):
         if 'tools' in fyodorov_config:
             for tool_dict in fyodorov_config["tools"]:
                 print(f"Tool dict: {tool_dict}")
-                # marshall back to yaml
+                # marshal back to yaml
                 tool_yaml = yaml.dump(tool_dict)
                 print(f"Tool yaml: {tool_yaml}")
                 new_tool = ToolModel.from_yaml(tool_yaml)
+                print(f"New tool: {new_tool}")
                 if new_tool:
-                    tool_instance = await Tool.create_or_update_in_db(user['session_id'], user['sub'], new_tool)
-                    print(f"New tool: {new_tool}")
-                    response["tools"].append(new_tool)
+                    tool_instance = await Tool.create_or_update_in_db(user['session_id'], new_tool, user['sub'])
+                    print(f"Saved tool: {tool_instance}")
+                    response["tools"].append(tool_instance.to_dict())
         print("Saved tools", response["tools"])
         if "agents" in fyodorov_config:
             for agent_dict in fyodorov_config["agents"]:
