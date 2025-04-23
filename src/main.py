@@ -14,6 +14,7 @@ from fyodorov_llm_agents.instances.instance_service import Instance
 from fyodorov_llm_agents.instances.instance_model import InstanceModel
 from fyodorov_llm_agents.agents.agent_model import Agent as AgentModel
 from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
+from fyodorov_llm_agents.tools.mcp_tool_service import MCPTool as Tool
 from fyodorov_llm_agents.providers.provider_service import Provider
 from fyodorov_llm_agents.providers.provider_model import ProviderModel
 from fyodorov_llm_agents.agents.agent_service import Agent
@@ -269,12 +270,15 @@ async def create_from_yaml(request: Request, user = Depends(authenticate)):
         print("Saved models", response["models"])
         if 'tools' in fyodorov_config:
             for tool_dict in fyodorov_config["tools"]:
-                print(f"Tool: {tool_dict}")
+                print(f"Tool dict: {tool_dict}")
                 # marshall back to yaml
                 tool_yaml = yaml.dump(tool_dict)
-                print(f"Tool: {tool_yaml}")
+                print(f"Tool yaml: {tool_yaml}")
                 new_tool = ToolModel.from_yaml(tool_yaml)
-                response["tools"].append(new_tool)
+                if new_tool:
+                    tool_instance = await Tool.create_or_update_in_db(user['session_id'], user['sub'], new_tool)
+                    print(f"New tool: {new_tool}")
+                    response["tools"].append(new_tool)
         print("Saved tools", response["tools"])
         if "agents" in fyodorov_config:
             for agent_dict in fyodorov_config["agents"]:
