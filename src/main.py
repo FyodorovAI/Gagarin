@@ -19,11 +19,12 @@ from fyodorov_utils.decorators.logging import error_handler
 
 from services.agent import Agent
 from services.instance import Instance
+from fyodorov_llm_agents.instances.instance_service import Instance
 from services.provider import Provider
 # from models.agent import AgentModel
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
-from models.instance import InstanceModel
+from Gagarin.src.models.instance_model import InstanceModel
 from models.provider import ProviderModel
 from services.provider import Provider
 from services.model import LLMModel
