@@ -12,7 +12,7 @@ from fyodorov_utils.decorators.logging import error_handler
 
 from fyodorov_llm_agents.instances.instance_service import Instance
 from fyodorov_llm_agents.instances.instance_model import InstanceModel
-from fyodorov_llm_agents.agents.agent import Agent as AgentModel
+from fyodorov_llm_agents.agents.agent_model import Agent as AgentModel
 from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
 from fyodorov_llm_agents.providers.provider_service import Provider
 from fyodorov_llm_agents.providers.provider_model import ProviderModel
