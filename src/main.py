@@ -1,32 +1,23 @@
-from fastapi import FastAPI, Depends, HTTPException, Security, Body, WebSocket, Request
+from fastapi import FastAPI, Depends, HTTPException, Body, WebSocket, Request
 from fastapi import Request
-from pydantic import BaseModel, EmailStr
 from fastapi.exceptions import HTTPException
-from fastapi.responses import JSONResponse, Response
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import StreamingResponse
 from datetime import datetime
-from typing import List
 from pydantic import HttpUrl
 import uvicorn
 import yaml
-import re
 
-import os
 
 from fyodorov_utils.auth.auth import authenticate
 from fyodorov_utils.decorators.logging import error_handler
 
-from services.agent import Agent
-from services.instance import Instance
 from fyodorov_llm_agents.instances.instance_service import Instance
-from services.provider import Provider
-# from models.agent import AgentModel
+from fyodorov_llm_agents.instances.instance_model import InstanceModel
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
 from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
-from Gagarin.src.models.instance_model import InstanceModel
-from models.provider import ProviderModel
-from services.provider import Provider
+from fyodorov_llm_agents.providers.provider_service import Provider
+from fyodorov_llm_agents.providers.provider_model import ProviderModel
+from services.agent import Agent
 from services.model import LLMModel
 from services.model import LLM
 

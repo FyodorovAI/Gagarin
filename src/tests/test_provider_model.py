@@ -1,5 +1,4 @@
-import pytest
-from pydantic import ValidationError, HttpUrl
+from pydantic import ValidationError
 from models.provider import ProviderModel
 
 def get_default_provider(
@@ -10,8 +9,8 @@ def get_default_provider(
     ) -> ProviderModel:
 
     try:
-        provider = ProviderModel(
-            provider_name=provider_name,
+        provider_model_instance = ProviderModel(
+            provider_name=provider,
             api_url=api_url,
             api_key=api_key,
             models=models,
@@ -20,8 +19,8 @@ def get_default_provider(
         print("Provider model validation error:", e)
         raise
     else:
-        print("Provider update model:", provider)
-        return provider
+        print("Provider update model:", provider_model_instance)
+        return provider_model_instance
 
 def test_default_provider_validation():
     try:

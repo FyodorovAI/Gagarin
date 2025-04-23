@@ -1,6 +1,5 @@
 from fyodorov_llm_agents.agents.agent import Agent as AgentModel
-from typing import Union
-from datetime import datetime, timedelta
+from datetime import datetime
 from supabase import  Client
 from fyodorov_utils.config.supabase import get_supabase
 from fyodorov_llm_agents.tools.tool import Tool as ToolModel
