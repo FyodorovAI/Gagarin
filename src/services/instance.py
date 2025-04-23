@@ -117,6 +117,7 @@ class Instance(InstanceModel):
         if not agent_id:
             raise ValueError('Agent ID is required')
         try:
+            print(f"Fetching instance with title {title} and agent ID {agent_id}")
             result = supabase.table('instances').select('*').eq('title', title).eq('agent_id', agent_id).limit(1).execute()
             if not result or not result.data:
                 print(f"No instance found with the given title {title} and agent ID {agent_id}: {result}")
