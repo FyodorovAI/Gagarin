@@ -269,6 +269,7 @@ async def create_from_yaml(request: Request, user = Depends(authenticate)):
         print("Saved models", response["models"])
         if 'tools' in fyodorov_config:
             for tool_dict in fyodorov_config["tools"]:
+                print(f"Tool: {tool_dict}")
                 # marshall back to yaml
                 tool_yaml = yaml.dump(tool_dict)
                 print(f"Tool: {tool_yaml}")
