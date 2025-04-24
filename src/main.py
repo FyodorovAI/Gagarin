@@ -297,7 +297,6 @@ async def create_from_yaml(request: Request, user = Depends(authenticate)):
         print('Error parsing config from yaml', str(e))
         raise HTTPException(status_code=400, detail="Invalid YAML format")
 
-
 @app.get('/yaml')
 @error_handler
 async def get_yaml(user = Depends(authenticate)):
