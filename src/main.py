@@ -297,6 +297,35 @@ async def create_from_yaml(request: Request, user = Depends(authenticate)):
         print('Error parsing config from yaml', str(e))
         raise HTTPException(status_code=400, detail="Invalid YAML format")
 
+
+@app.get('/yaml')
+@error_handler
+async def get_yaml(user = Depends(authenticate)):
+    try:
+        limit = 100
+        result = {
+            "providers": [],
+            "models": [],
+            "agents": [],
+            "instances": [],
+            "tools": []
+        }
+        providers = await Provider.get_providers(limit=limit, user_id=user['sub'])
+        result.proveriders = [provider.to_dict() for provider in providers]
+        models = await LLM.get_models(limit=limit, user_id=user['sub'])
+        result.models = [model.to_dict() for model in models]
+        agents = await Agent.get_all_in_db(limit=limit, user_id=user['sub'])
+        result.agents = [agent.to_dict() for agent in agents]
+        instances = await Instance.get_all_in_db(limit=limit, user_id=user['sub'])
+        result.instances = [instance.to_dict() for instance in instances]
+        tools = await Tool.get_all_in_db(limit=limit, user_id=user['sub'])
+        result.tools = [tool.to_dict() for tool in tools]
+        result = yaml.dump(result)
+        return result
+    except Exception as e:
+        print('Error getting yaml', str(e))
+        raise HTTPException(status_code=400, detail="Error marshaling resources to yaml")
+
 # User endpoints
 from fyodorov_utils.auth.endpoints import users_app
 app.mount('/users', users_app)
