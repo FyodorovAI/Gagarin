@@ -311,7 +311,7 @@ async def get_yaml(user = Depends(authenticate)):
             "tools": []
         }
         providers = await Provider.get_providers(limit=limit, user_id=user['sub'])
-        result.proveriders = [provider.to_dict() for provider in providers]
+        result.providers = [provider.to_dict() for provider in providers]
         models = await LLM.get_models(limit=limit, user_id=user['sub'])
         result.models = [model.to_dict() for model in models]
         agents = await Agent.get_all_in_db(limit=limit, user_id=user['sub'])
