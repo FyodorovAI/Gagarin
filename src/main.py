@@ -311,15 +311,15 @@ async def get_yaml(user = Depends(authenticate)):
             "tools": []
         }
         providers = await Provider.get_providers(limit=limit, user_id=user['sub'])
-        result.providers = [provider.to_dict() for provider in providers]
+        result["providers"] = [provider.to_dict() for provider in providers]
         models = await LLM.get_models(limit=limit, user_id=user['sub'])
-        result.models = [model.to_dict() for model in models]
+        result["models"] = [model.to_dict() for model in models]
         agents = await Agent.get_all_in_db(limit=limit, user_id=user['sub'])
-        result.agents = [agent.to_dict() for agent in agents]
+        result["agents"] = [agent.to_dict() for agent in agents]
         instances = await Instance.get_all_in_db(limit=limit, user_id=user['sub'])
-        result.instances = [instance.to_dict() for instance in instances]
+        result["instances"] = [instance.to_dict() for instance in instances]
         tools = await Tool.get_all_in_db(limit=limit, user_id=user['sub'])
-        result.tools = [tool.to_dict() for tool in tools]
+        result["tools"] = [tool.to_dict() for tool in tools]
         result = yaml.dump(result)
         return result
     except Exception as e:
