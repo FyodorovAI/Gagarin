@@ -328,6 +328,17 @@ async def get_yaml(user = Depends(authenticate)):
         print('Error getting yaml', str(e))
         raise HTTPException(status_code=400, detail="Error marshaling resources to yaml")
 
+@app.get('/yaml/{resource_type}')
+@error_handler
+async def get_yaml_by_name(resource_type: str, user = Depends(authenticate)):
+    if resource_type not in ["providers", "models", "agents", "instances", "tools"]:
+        raise HTTPException(status_code=400, detail="Invalid resource type")
+    limit = 100
+    resources = await globals()[resource_type].get_all_in_db(limit=limit, user_id=user['sub'])
+    result = [resource.resource_dict() for resource in resources]
+    yaml_result = yaml.dump(result, indent=2)
+    return Response(content=yaml_result, media_type="application/x-yaml")
+
 # User endpoints
 from fyodorov_utils.auth.endpoints import users_app
 app.mount('/users', users_app)
