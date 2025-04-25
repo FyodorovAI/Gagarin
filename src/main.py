@@ -320,9 +320,9 @@ async def get_yaml(user = Depends(authenticate)):
         tools = await Tool.get_all_in_db(access_token=user['session_id'], limit=limit, user_id=user['sub'])
         result["tools"] = [tool.to_dict() for tool in tools]
         print(f"Result: {result}")
-        result = yaml.dump(result)
-        print(f"YAML: {result}")
-        return result
+        yaml_result = yaml.dump(result, indent=2)
+        print(f"YAML: {yaml_result}")
+        return yaml_result
     except Exception as e:
         print('Error getting yaml', str(e))
         raise HTTPException(status_code=400, detail="Error marshaling resources to yaml")
