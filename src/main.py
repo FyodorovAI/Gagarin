@@ -317,7 +317,7 @@ async def get_yaml(user = Depends(authenticate)):
         result["agents"] = [agent.to_dict() for agent in agents]
         instances = await Instance.get_all_in_db(limit=limit, user_id=user['sub'])
         result["instances"] = [instance.to_dict() for instance in instances]
-        tools = await Tool.get_all_in_db(limit=limit, user_id=user['sub'])
+        tools = await Tool.get_all_in_db(access_token=user['session_id'], limit=limit, user_id=user['sub'])
         result["tools"] = [tool.to_dict() for tool in tools]
         result = yaml.dump(result)
         return result
