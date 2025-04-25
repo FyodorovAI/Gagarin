@@ -319,7 +319,9 @@ async def get_yaml(user = Depends(authenticate)):
         result["instances"] = [instance.to_dict() for instance in instances]
         tools = await Tool.get_all_in_db(access_token=user['session_id'], limit=limit, user_id=user['sub'])
         result["tools"] = [tool.to_dict() for tool in tools]
+        print(f"Result: {result}")
         result = yaml.dump(result)
+        print(f"YAML: {result}")
         return result
     except Exception as e:
         print('Error getting yaml', str(e))
