@@ -334,8 +334,19 @@ async def get_yaml_by_name(resource_type: str, user = Depends(authenticate)):
     limit = 100
     print(f"Got request for {resource_type} yaml")
     if resource_type not in ["providers", "models", "agents", "instances", "tools"]:
+        raise HTTPException(status_code=400, detail="Unrecognized resource type")
+    elif resource_type == "providers":
+        resources = await Provider.get_providers(limit=limit, user_id=user['sub'])
+    elif resource_type == "models":
+        resources = await LLM.get_models(limit=limit, user_id=user['sub'])
+    elif resource_type == "agents":
+        resources = await Agent.get_all_in_db(limit=limit, user_id=user['sub'])
+    elif resource_type == "instances":
+        resources = await Instance.get_all_in_db(limit=limit, user_id=user['sub'])
+    elif resource_type == "tools":
+        resources = await Tool.get_all_in_db(access_token=user['session_id'], limit=limit, user_id=user['sub'])
+    else:
         raise HTTPException(status_code=400, detail="Invalid resource type")
-    resources = await globals()[resource_type].get_all_in_db(limit=limit, user_id=user['sub'])
     print(f"Resources: {resources}")
     result = [resource.resource_dict() for resource in resources]
     print(f"Resources dict: {result}")
