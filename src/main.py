@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, Body, WebSocket, Request
 from fastapi import Request
 from fastapi.exceptions import HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
+
 from datetime import datetime
 from pydantic import HttpUrl
 import uvicorn
@@ -322,7 +323,7 @@ async def get_yaml(user = Depends(authenticate)):
         print(f"Result: {result}")
         yaml_result = yaml.dump(result, indent=2)
         print(f"YAML: {yaml_result}")
-        return yaml_result
+        return Response(content=yaml_result, media_type="application/x-yaml")
     except Exception as e:
         print('Error getting yaml', str(e))
         raise HTTPException(status_code=400, detail="Error marshaling resources to yaml")
