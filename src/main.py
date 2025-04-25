@@ -331,11 +331,14 @@ async def get_yaml(user = Depends(authenticate)):
 @app.get('/yaml/{resource_type}')
 @error_handler
 async def get_yaml_by_name(resource_type: str, user = Depends(authenticate)):
+    limit = 100
+    print(f"Got request for {resource_type} yaml")
     if resource_type not in ["providers", "models", "agents", "instances", "tools"]:
         raise HTTPException(status_code=400, detail="Invalid resource type")
-    limit = 100
     resources = await globals()[resource_type].get_all_in_db(limit=limit, user_id=user['sub'])
+    print(f"Resources: {resources}")
     result = [resource.resource_dict() for resource in resources]
+    print(f"Resources dict: {result}")
     yaml_result = yaml.dump(result, indent=2)
     return Response(content=yaml_result, media_type="application/x-yaml")
 
