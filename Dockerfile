@@ -6,6 +6,10 @@ COPY ./src/requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install --retries 3 --timeout 60 fyodorov_utils==0.3.17
+
+RUN pip install --retries 3 --timeout 60 fyodorov_llm_agents==0.4.30
+
 COPY ./src .
 
 EXPOSE 8000
