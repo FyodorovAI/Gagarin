@@ -128,7 +128,7 @@ async def delete_model(id: str, user = Depends(authenticate)):
 @app.post('/agents')
 @error_handler
 async def create_agent(agent: AgentModel, user = Depends(authenticate)):
-    agent_id = Agent.create_in_db(user['session_id'], agent)
+    agent_id = await Agent.create_in_db(user['session_id'], agent)
     return agent_id
 
 @app.post('/agents/from-yaml')
@@ -137,7 +137,7 @@ async def create_agent_from_yaml(request: Request, user = Depends(authenticate))
     try:
         agent_yaml = await request.body()
         agent = AgentModel.from_yaml(agent_yaml)
-        return Agent.create_in_db(user['session_id'], agent)
+        return await Agent.create_in_db(user['session_id'], agent)
     except Exception as e:
         print('Error creating agent from yaml', str(e))
         raise HTTPException(status_code=400, detail="Invalid YAML format")
@@ -145,37 +145,37 @@ async def create_agent_from_yaml(request: Request, user = Depends(authenticate))
 @app.get('/agents')
 @error_handler
 async def get_agents(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):    
-    return Agent.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
+    return await Agent.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
 
 @app.get('/agents/{id}')
 @error_handler
 async def get_agent(id: str, user = Depends(authenticate)):
-    return Agent.get_in_db(id)
+    return await Agent.get_in_db(id)
 
 @app.put('/agents/{id}')
 @error_handler
 async def update_agent(id: str, agent: dict, user = Depends(authenticate)):
-    return Agent.update_in_db(id, agent)
+    return await Agent.update_in_db(id, agent)
 
 @app.delete('/agents/{id}')
 @error_handler
 async def delete_agent(id: str, user = Depends(authenticate)):
-    return Agent.delete_in_db(id)
+    return await Agent.delete_in_db(id)
 
 @app.get('/agents/{id}/tools')
 @error_handler
 async def get_agent_tools(id: str, user = Depends(authenticate)):
-    return Agent.get_agent_tools(user['session_id'], id)
+    return await Agent.get_agent_tools(user['session_id'], id)
 
 @app.post('/agents/{id}/tools')
 @error_handler
 async def assign_agent_tools(id: str, tools: list[ToolModel], user = Depends(authenticate)):
-    return Agent.assign_agent_tools(user['session_id'], id, tools)
+    return await Agent.assign_agent_tools(user['session_id'], id, tools)
 
 @app.delete('/agents/{id}/tools/{tool_id}')
 @error_handler
 async def remove_agent_tool(id: str, tool_id: str, user = Depends(authenticate)):
-    return Agent.delete_agent_tool_connection(user['session_id'], id, tool_id)
+    return await Agent.delete_agent_tool_connection(user['session_id'], id, tool_id)
 
 # Instances endpoints
 @app.post('/instances')
@@ -183,7 +183,7 @@ async def remove_agent_tool(id: str, tool_id: str, user = Depends(authenticate))
 async def create_instance(instance: InstanceModel, user = Depends(authenticate)):
     if instance.agent_id not in [str(agent["id"]) for agent in Agent.get_all_in_db()]:
         raise HTTPException(status_code=404, detail="Agent not found")
-    Instance.create_in_db(instance)
+    await Instance.create_in_db(instance)
     return instance
 
 @app.get('/instances')
@@ -193,8 +193,8 @@ async def get_instances(user = Depends(authenticate), limit: int = 10, created_a
 
 @app.get('/instances/{id}')
 @error_handler
-def get_instance(id: str, user = Depends(authenticate)):
-    return Instance.get_in_db(id)
+async def get_instance(id: str, user = Depends(authenticate)):
+    return await Instance.get_in_db(id)
 
 @app.put('/instances/{id}')
 @error_handler
@@ -204,7 +204,7 @@ async def update_instance(id: str, instance: dict, user = Depends(authenticate))
 @app.delete('/instances/{id}')
 @error_handler
 async def delete_instance(id: str, user = Depends(authenticate)):
-    return Instance.delete_in_db(id)
+    return await Instance.delete_in_db(id)
 
 # Chat via websocket
 # host a websocket where users can send and receive messages from an instance
