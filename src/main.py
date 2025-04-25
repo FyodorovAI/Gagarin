@@ -187,8 +187,8 @@ async def create_instance(instance: InstanceModel, user = Depends(authenticate))
 
 @app.get('/instances')
 @error_handler
-def get_instances(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):
-    return Instance.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
+async def get_instances(user = Depends(authenticate), limit: int = 10, created_at_lt: datetime = datetime.now()):
+    return await Instance.get_all_in_db(limit = limit, created_at_lt = created_at_lt)
 
 @app.get('/instances/{id}')
 @error_handler
