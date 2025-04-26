@@ -224,7 +224,7 @@ async def websocket_endpoint(id: str, websocket: WebSocket):
 # Chat
 @app.get("/instances/{id}/chat")
 async def chat(id: str, message: dict = Body(..., media_type="application/json"), user = Depends(authenticate)):
-    instance_model = await Instance.get_in_db(str(id))
+    instance_model = await Instance.get_in_db(id)
     instance = Instance(**instance_model.to_dict())
     res = await instance.chat_w_fn_calls(message["input"], access_token=user['session_id'], user_id=user['sub'])
     return res
