@@ -318,14 +318,14 @@ async def get_yaml(user = Depends(authenticate)):
         result["agents"] = [agent.resource_dict() for agent in agents]
         instances = await Instance.get_all_in_db(limit=limit, user_id=user['sub'])
         result["instances"] = [instance.resource_dict() for instance in instances]
-        tools = await Tool.get_all_in_db(access_token=user['session_id'], limit=limit, user_id=user['sub'])
+        tools = await Tool.get_all_in_db(limit=limit, user_id=user['sub'])
         result["tools"] = [tool.resource_dict() for tool in tools]
         print(f"Result: {result}")
         yaml_result = yaml.dump(result, indent=2)
         print(f"YAML: {yaml_result}")
         return Response(content=yaml_result, media_type="application/x-yaml")
     except Exception as e:
-        print('Error getting yaml', str(e))
+        print('Error getting yaml:', str(e))
         raise HTTPException(status_code=400, detail="Error marshaling resources to yaml")
 
 @app.get('/yaml/{resource_type}')
@@ -358,7 +358,7 @@ async def get_yaml_by_name(resource_type: str, user = Depends(authenticate)):
         yaml_result = yaml.dump(resources, indent=2)
         return Response(content=yaml_result, media_type="application/x-yaml")
     except Exception as e:
-        print('Error getting yaml for resource', str(e))
+        print('Error getting yaml for resource:', str(e))
         raise HTTPException(status_code=400, detail=f"Error marshaling {resource_type} resources to yaml")
 
 # User endpoints
