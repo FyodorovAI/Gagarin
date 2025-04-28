@@ -334,28 +334,32 @@ async def get_yaml_by_name(resource_type: str, user = Depends(authenticate)):
     limit = 100
     print(f"Got request for {resource_type} yaml")
     resources = {}
-    if resource_type not in ["providers", "models", "agents", "instances", "tools"]:
-        raise HTTPException(status_code=400, detail="Unrecognized resource type")
-    elif resource_type == "providers":
-        resources["providers"] = await Provider.get_providers(limit=limit, user_id=user['sub'])
-        resources["providers"] = [provider.resource_dict() for provider in resources["providers"]]
-    elif resource_type == "models":
-        resources["models"] = await LLM.get_models(limit=limit, user_id=user['sub'])
-        resources["models"] = [models.resource_dict() for models in resources["models"]]
-    elif resource_type == "agents":
-        resources["agents"] = await Agent.get_all_in_db(limit=limit, user_id=user['sub'])
-        resources["agents"] = [agents.resource_dict() for agents in resources["agents"]]
-    elif resource_type == "instances":
-        resources["instances"] = await Instance.get_all_in_db(limit=limit, user_id=user['sub'])
-        resources["instances"] = [instances.resource_dict() for instances in resources["instances"]]
-    elif resource_type == "tools":
-        resources["tools"] = await Tool.get_all_in_db(limit=limit, user_id=user['sub'])
-        resources["tools"] = [tools.resource_dict() for tools in resources["tools"]]
-    else:
-        raise HTTPException(status_code=400, detail="Invalid resource type")
-    print(f"Resources: {resources}")
-    yaml_result = yaml.dump(resources, indent=2)
-    return Response(content=yaml_result, media_type="application/x-yaml")
+    try:
+        if resource_type not in ["providers", "models", "agents", "instances", "tools"]:
+            raise HTTPException(status_code=400, detail="Unrecognized resource type")
+        elif resource_type == "providers":
+            resources["providers"] = await Provider.get_providers(limit=limit, user_id=user['sub'])
+            resources["providers"] = [provider.resource_dict() for provider in resources["providers"]]
+        elif resource_type == "models":
+            resources["models"] = await LLM.get_models(limit=limit, user_id=user['sub'])
+            resources["models"] = [models.resource_dict() for models in resources["models"]]
+        elif resource_type == "agents":
+            resources["agents"] = await Agent.get_all_in_db(limit=limit, user_id=user['sub'])
+            resources["agents"] = [agents.resource_dict() for agents in resources["agents"]]
+        elif resource_type == "instances":
+            resources["instances"] = await Instance.get_all_in_db(limit=limit, user_id=user['sub'])
+            resources["instances"] = [instances.resource_dict() for instances in resources["instances"]]
+        elif resource_type == "tools":
+            resources["tools"] = await Tool.get_all_in_db(limit=limit, user_id=user['sub'])
+            resources["tools"] = [tools.resource_dict() for tools in resources["tools"]]
+        else:
+            raise HTTPException(status_code=400, detail="Invalid resource type")
+        print(f"Resources: {resources}")
+        yaml_result = yaml.dump(resources, indent=2)
+        return Response(content=yaml_result, media_type="application/x-yaml")
+    except Exception as e:
+        print('Error getting yaml', str(e))
+        raise HTTPException(status_code=400, detail=f"Error marshaling {resource_type} resources to yaml")
 
 # User endpoints
 from fyodorov_utils.auth.endpoints import users_app
