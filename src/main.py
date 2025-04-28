@@ -358,7 +358,7 @@ async def get_yaml_by_name(resource_type: str, user = Depends(authenticate)):
         yaml_result = yaml.dump(resources, indent=2)
         return Response(content=yaml_result, media_type="application/x-yaml")
     except Exception as e:
-        print('Error getting yaml', str(e))
+        print('Error getting yaml for resource', str(e))
         raise HTTPException(status_code=400, detail=f"Error marshaling {resource_type} resources to yaml")
 
 # User endpoints
