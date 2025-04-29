@@ -6,6 +6,8 @@ COPY ./src/requirements.txt .
 
 RUN uv venv
 
+RUN uv pip install uvicorn
+
 RUN uv pip install --no-cache-dir -r requirements.txt
 
 RUN uv pip install fyodorov_utils==0.3.17
