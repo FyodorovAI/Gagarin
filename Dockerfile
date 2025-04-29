@@ -8,9 +8,9 @@ RUN uv venv
 
 RUN uv pip install --no-cache-dir -r requirements.txt
 
-RUN uv pip install --timeout 60 fyodorov_utils==0.3.17
+RUN uv pip install fyodorov_utils==0.3.17
 
-RUN uv pip install --timeout 60 fyodorov_llm_agents==0.4.38
+RUN uv pip install fyodorov_llm_agents==0.4.38
 
 COPY ./src .
 
