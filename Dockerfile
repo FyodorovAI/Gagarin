@@ -4,15 +4,11 @@ WORKDIR /app
 
 COPY ./src/requirements.txt .
 
-RUN uv venv
-
-RUN uv pip install uvicorn
-
-RUN uv pip install --no-cache-dir -r requirements.txt
-
-RUN uv pip install fyodorov_utils==0.3.17
-
-RUN uv pip install fyodorov_llm_agents==0.4.38
+# Install dependencies globally using --system
+RUN uv pip install --system uvicorn
+RUN uv pip install --system --no-cache-dir -r requirements.txt
+RUN uv pip install --system fyodorov_utils==0.3.17
+RUN uv pip install --system fyodorov_llm_agents==0.4.38
 
 COPY ./src .
 
