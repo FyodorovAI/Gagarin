@@ -1,12 +1,13 @@
 from pydantic import ValidationError
 from models.provider import ProviderModel
 
+
 def get_default_provider(
-        provider: str | None = "openai",
-        api_url: str | None = "https://api.openai.com",
-        api_key: str | None = "key",
-        models: list[str] | None = ["text-davinci-003"]
-    ) -> ProviderModel:
+    provider: str | None = "openai",
+    api_url: str | None = "https://api.openai.com",
+    api_key: str | None = "key",
+    models: list[str] | None = ["text-davinci-003"],
+) -> ProviderModel:
 
     try:
         provider_model_instance = ProviderModel(
@@ -22,6 +23,7 @@ def get_default_provider(
         print("Provider update model:", provider_model_instance)
         return provider_model_instance
 
+
 def test_default_provider_validation():
     try:
         get_default_provider()
@@ -29,6 +31,7 @@ def test_default_provider_validation():
         assert False, f"An exception occurred: {e}"
     else:
         assert True, "No exception should be thrown"
+
 
 def test_invalid_provider_validation():
     try:
@@ -38,8 +41,9 @@ def test_invalid_provider_validation():
     else:
         assert False, "An exception should be thrown"
 
+
 def test_invalid_api_url():
-    invalid_urls = ['invalid-url', 'ftp://invalid-url', 'localhost:8000']
+    invalid_urls = ["invalid-url", "ftp://invalid-url", "localhost:8000"]
     for invalid_url in invalid_urls:
         try:
             print(f"Testing invalid URL: {invalid_url}")

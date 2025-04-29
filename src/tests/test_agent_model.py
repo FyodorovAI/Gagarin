@@ -2,16 +2,17 @@ import pytest
 from models.agent import AgentModel, Rag, Tools
 from pydantic import ValidationError
 
+
 def get_default_agent(
-        provider: str = "openapi",
-        model: str = "gpt-3.5-turbo",
-        name_for_human: str = "My Agent",
-        description_for_human: str = "My Agent",
-        prompt: str = "My Prompt",
-        prompt_size: int = 1000,
-        rag: [Rag] = [],
-        tools: [Tools] = [],
-    ) -> AgentModel:
+    provider: str = "openapi",
+    model: str = "gpt-3.5-turbo",
+    name_for_human: str = "My Agent",
+    description_for_human: str = "My Agent",
+    prompt: str = "My Prompt",
+    prompt_size: int = 1000,
+    rag: [Rag] = [],
+    tools: [Tools] = [],
+) -> AgentModel:
 
     try:
         agent = AgentModel(
@@ -31,6 +32,7 @@ def get_default_agent(
         print("Agent model:", agent)
         return agent
 
+
 def test_default_agent_validation():
     # Get an agent by calling get_default_agent()
     agent = get_default_agent()
@@ -38,9 +40,7 @@ def test_default_agent_validation():
     # Validate the agent and get a boolean indicating if it is valid
     is_valid = agent.validate()
 
-    assert is_valid, (
-        "Default agent should be valid"
-    )
+    assert is_valid, "Default agent should be valid"
 
 
 def test_long_name_for_human():
@@ -66,9 +66,13 @@ def test_long_description_for_human():
 
 def test_invalid_description_for_human():
     # Create an agent with an invalid description for human
-    invalid_description_agent = get_default_agent(description_for_human="This is my agent @!")
+    invalid_description_agent = get_default_agent(
+        description_for_human="This is my agent @!"
+    )
     is_valid = invalid_description_agent.validate()
-    assert not is_valid, "Invalid description for human should result in an invalid agent"
+    assert (
+        not is_valid
+    ), "Invalid description for human should result in an invalid agent"
 
 
 def test_invalid_api_url():
