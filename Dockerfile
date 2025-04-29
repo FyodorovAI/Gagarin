@@ -4,11 +4,13 @@ WORKDIR /app
 
 COPY ./src/requirements.txt .
 
-RUN uv pip install --no-cache-dir --system -r requirements.txt
+RUN uv venv
 
-RUN uv pip install --timeout 60 --system fyodorov_utils==0.3.17
+RUN uv pip install --no-cache-dir -r requirements.txt
 
-RUN uv pip install --timeout 60 --system fyodorov_llm_agents==0.4.38
+RUN uv pip install --timeout 60 fyodorov_utils==0.3.17
+
+RUN uv pip install --timeout 60 fyodorov_llm_agents==0.4.38
 
 COPY ./src .
 
