@@ -1,6 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException, Body, WebSocket, Request
-from fastapi import Request
-from fastapi.exceptions import HTTPException
 from fastapi.responses import StreamingResponse, Response
 
 from datetime import datetime
@@ -21,9 +19,12 @@ from fyodorov_llm_agents.providers.provider_model import ProviderModel
 from fyodorov_llm_agents.agents.agent_service import Agent
 from fyodorov_llm_agents.models.llm_model import LLMModel
 from fyodorov_llm_agents.models.llm_service import LLM
-
+# User endpoints
+from fyodorov_utils.auth.endpoints import users_app
 
 app = FastAPI(title="Gagarin", description="A service for creating and managing chatbots and agents", version="0.0.1")
+app.mount('/users', users_app)
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     # Log the request here
@@ -360,10 +361,6 @@ async def get_yaml_by_name(resource_type: str, user = Depends(authenticate)):
     except Exception as e:
         print('Error getting yaml for resource:', str(e))
         raise HTTPException(status_code=400, detail=f"Error marshaling {resource_type} resources to yaml")
-
-# User endpoints
-from fyodorov_utils.auth.endpoints import users_app
-app.mount('/users', users_app)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=3000)

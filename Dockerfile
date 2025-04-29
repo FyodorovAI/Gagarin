@@ -1,14 +1,14 @@
-FROM python:3.11-slim
+FROM ghcr.io/astral-sh/uv:python3.12-alpine
 
 WORKDIR /app
 
 COPY ./src/requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --retries 3 --timeout 60 fyodorov_utils==0.3.17
+RUN uv pip install --retries 3 --timeout 60 fyodorov_utils==0.3.17
 
-RUN pip install --retries 3 --timeout 60 fyodorov_llm_agents==0.4.38
+RUN uv pip install --retries 3 --timeout 60 fyodorov_llm_agents==0.4.38
 
 COPY ./src .
 
