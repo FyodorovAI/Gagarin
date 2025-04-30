@@ -5,8 +5,8 @@ WORKDIR /app
 COPY ./src/requirements.txt .
 
 # Install dependencies globally using --system
-RUN uv pip install --system uvicorn
-RUN uv pip install --system --no-cache-dir -r requirements.txt
+RUN uv pip install --system uvicorn \
+    && uv pip install --system --no-cache-dir -r requirements.txt
 RUN uv pip install --system fyodorov_utils==0.3.17
 RUN uv pip install --system fyodorov_llm_agents==0.4.38
 
