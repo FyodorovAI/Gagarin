@@ -4,20 +4,18 @@ from fastapi.responses import StreamingResponse
 from datetime import datetime
 from pydantic import HttpUrl
 import uvicorn
-import yaml
 
 from fyodorov_utils.auth.auth import authenticate
 from fyodorov_utils.decorators.logging import error_handler
+from fyodorov_utils.services.yaml import app as yaml_app
 
 from fyodorov_llm_agents.instances.instance_service import Instance
 from fyodorov_llm_agents.instances.instance_model import InstanceModel
 from fyodorov_llm_agents.agents.agent_model import Agent as AgentModel
 from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
-from fyodorov_llm_agents.tools.mcp_tool_service import MCPTool as Tool
 from fyodorov_llm_agents.providers.provider_service import Provider
 from fyodorov_llm_agents.providers.provider_model import ProviderModel
 from fyodorov_llm_agents.agents.agent_service import Agent
-from fyodorov_llm_agents.models.llm_model import LLMModel
 from fyodorov_llm_agents.models.llm_service import LLM
 
 # User endpoints
@@ -29,7 +27,7 @@ app = FastAPI(
     version="0.0.1",
 )
 app.mount("/users", users_app)
-
+app.mount("/yaml", yaml_app)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
