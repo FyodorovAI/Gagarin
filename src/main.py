@@ -29,6 +29,7 @@ app = FastAPI(
 app.mount("/users", users_app)
 app.mount("/yaml", yaml_app)
 
+
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     # Log the request here
@@ -309,6 +310,7 @@ async def multiple_function_calls(
         instance.use_custom_library_async(input=input, access_token=user["session_id"]),
         media_type="text/plain",
     )
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=3000)
