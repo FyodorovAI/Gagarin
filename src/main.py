@@ -133,14 +133,14 @@ async def get_models(
 @app.get("/models/{id}")
 @error_handler
 async def get_model(id: str, user=Depends(authenticate)):
-    return await LLM.get_model(access_token=user["session_id"], id=id)
+    return await LLM.get_model(id=id)
 
 
 @app.get("/models/")
 @error_handler
 async def get_model_by_name(name: str, user=Depends(authenticate)):
     return await LLM.get_model(
-        access_token=user["session_id"], user_id=user["sub"], name=name
+        user_id=user["sub"], name=name
     )
 
 
