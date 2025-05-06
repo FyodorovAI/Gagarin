@@ -268,7 +268,7 @@ async def delete_instance(id: str, user=Depends(authenticate)):
 @app.websocket("/instances/{id}/ws")
 async def websocket_endpoint(id: str, websocket: WebSocket):
     await websocket.accept()
-    instance_model = Instance.get_in_db(str(id))
+    instance_model = Instance.get_in_db(id)
     instance = Instance(**instance_model.to_dict())
     await websocket.send_text(
         [
@@ -305,7 +305,7 @@ async def multiple_function_calls(
 ):
     print(f"ID: {id}")
     print(f"Input: {input}")
-    instance_model = Instance.get_in_db(str(id))
+    instance_model = Instance.get_in_db(id)
     instance = Instance(**instance_model.to_dict())
     return StreamingResponse(
         instance.use_custom_library_async(input=input, access_token=user["session_id"]),
