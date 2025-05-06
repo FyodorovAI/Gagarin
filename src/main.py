@@ -228,8 +228,8 @@ async def remove_agent_tool(id: str, tool_id: str, user=Depends(authenticate)):
 @app.post("/instances")
 @error_handler
 async def create_instance(instance: InstanceModel, user=Depends(authenticate)):
-    agents = await Agent.get_all_in_db()
-    if instance.agent_id not in [agent.id for agent in agents]:
+    agent = await Agent.get_in_db(id=instance.agent_id)
+    if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
     instance = await Instance.create_in_db(instance)
     return instance
