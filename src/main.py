@@ -153,7 +153,7 @@ async def update_model(id: str, model: dict, user=Depends(authenticate)):
 @app.delete("/models/{id}")
 @error_handler
 async def delete_model(id: str, user=Depends(authenticate)):
-    return await LLM.delete_model_in_db(id)
+    return await LLM.delete_model_in_db(access_token=user["session_id"], user_id=user["sub"], name=None, id=id)
 
 
 # Agents endpoints
