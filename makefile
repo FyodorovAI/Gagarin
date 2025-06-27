@@ -1,5 +1,5 @@
 
-build-docker:
+docker-build:
 	docker build -t gagarin:main .
 
 push-docker:
