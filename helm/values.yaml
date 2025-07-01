@@ -34,10 +34,4 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   targetMemoryUtilizationPercentage: 80
 
-env:
-  - name: supabaseProjectURL
-    value: ""
-  - name: supabaseAPIKey
-    value: ""
-  - name: jwtSecret
-    value: ""
+env: {}

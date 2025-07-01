@@ -28,3 +28,4 @@ lint:
 
 format:
 	ruff format main.py
+
