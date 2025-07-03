@@ -1,17 +1,10 @@
-replicaCount: 1
-
+# Service-specific configuration for Gagarin
 image:
-  repository: ghcr.io/fyodorovai/gagarin
-  tag: main
-  pullPolicy: Always
+  repository: "ghcr.io/fyodorovai/gagarin"
+  tag: "main"
 
 service:
-  type: ClusterIP
-  ports: 
-    - port: 8000
-      targetPort: 8000
-      protocol: TCP
-      name: http
+  port: 8000
 
 resources:
   requests:
@@ -21,17 +14,11 @@ resources:
     cpu: 500m
     memory: 500Mi
 
+# Enable ingress with service-specific host
 ingress:
   enabled: true
   hosts:
     - gagarin.danielransom.com
-  tls: true
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 80
-
+# Environment variables specific to Gagarin
 env: {}

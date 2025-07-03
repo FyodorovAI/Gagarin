@@ -4,3 +4,7 @@ description: A service for managing LLM-based agents with configurable prompts a
 version: 0.1.0
 appVersion: 0.1.0
 type: application
+dependencies:
+  - name: fyodorov-service-base
+    version: "0.1.0"
+    repository: "file://../../helm/fyodorov-service-base"
