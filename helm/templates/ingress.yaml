@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}-ingress
+  name: {{ .Chart.Name }}-ingress
   labels:
     suite: fyodorov
     service: gagarin
@@ -16,7 +16,7 @@ spec:
         {{- range .Values.ingress.hosts }}
         - {{ . | quote }}
         {{- end }}
-      secretName: {{ .Release.Name }}-tls
+      secretName: {{ .Chart.Name }}-tls
     {{- end }}
   rules:
     {{- range .Values.ingress.hosts }}

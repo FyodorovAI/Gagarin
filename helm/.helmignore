@@ -1,0 +1,10 @@
+venv/
+*.pyc
+__pycache__/
+model
+*.bin
+*.h5
+*.pt
+*.pkl
+*.tar.gz
+*.zip
