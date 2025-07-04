@@ -1,6 +1,0 @@
-dependencies:
-- name: fyodorov-service-base
-  repository: file://../../helm/fyodorov-service-base
-  version: 0.1.0
-digest: sha256:3b00445ad2ec75011d477dda75ca19460a094e34a1c15defc2716eb6c2f72e4c
-generated: "2025-07-04T00:09:22.922356+02:00"
