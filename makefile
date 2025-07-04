@@ -7,3 +7,6 @@ push-docker:
 
 deploy-helm:
 	make -C ./helm deploy-helm
+
+uninstall-helm:
+	make -C ./helm uninstall-helm
