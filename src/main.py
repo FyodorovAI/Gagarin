@@ -305,7 +305,7 @@ async def multiple_function_calls(
 ):
     print(f"ID: {id}")
     print(f"Input: {input}")
-    instance_model = Instance.get_in_db(id)
+    instance_model = await Instance.get_in_db(id)
     instance = Instance(**instance_model.to_dict())
     return StreamingResponse(
         instance.use_custom_library_async(input=input, access_token=user["session_id"]),
