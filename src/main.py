@@ -292,7 +292,7 @@ async def chat(
     user=Depends(authenticate),
 ):
     instance_model = await Instance.get_in_db(id)
-    instance = Instance(**instance_model.to_dict())
+    instance = await Instance.get_in_db(id)
     res = await instance.chat_w_fn_calls(
         message["input"], access_token=user["session_id"], user_id=user["sub"]
     )
