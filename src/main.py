@@ -15,7 +15,7 @@ from fyodorov_llm_agents.agents.agent_model import Agent as AgentModel
 from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
 from fyodorov_llm_agents.providers.provider_service import Provider
 from fyodorov_llm_agents.providers.provider_model import ProviderModel
-from fyodorov_llm_agents.agents.agent_service import Agent
+from fyodorov_llm_agents.agents.agent_service import AgentService as Agent
 from fyodorov_llm_agents.models.llm_service import LLM
 
 # User endpoints
