@@ -59,10 +59,10 @@ def health_check():
 @app.post("/providers")
 @error_handler
 async def create_provider(
-    provider: ProviderModel, request: Request, user=Depends(authenticate)
+    provider_model: ProviderModel, request: Request, user=Depends(authenticate)
 ):
     print(f"User: {user}")
-    if "localhost" in str(provider.api_url):
+    if "localhost" in str(provider_model.api_url):
         print("Replacing IP in API URL")
         # Get the IP address of the user
         print(f"Request: {request.headers}")
@@ -72,11 +72,12 @@ async def create_provider(
                 ip = request.remote_addr
             print(f"IP: {ip}")
             # Replace the API URL with the new IP
-            provider.api_url = HttpUrl(str(provider.api_url).replace("localhost", ip))
-            print(f"New API URL: {provider.api_url}")
-    print(f"ProviderModel: {provider}")
-    return await Provider.save_provider_in_db(
-        access_token=user["session_id"], provider=provider, user_id=user["sub"]
+            provider_model.api_url = HttpUrl(str(provider_model.api_url).replace("localhost", ip))
+            print(f"New API URL: {provider_model.api_url}")
+    print(f"ProviderModel: {provider_model}")
+    provider = Provider(user_id=user["sub"], access_token=user["session_id"])
+    return await provider.upsert_in_db(
+        model=provider_model, access_token=user["session_id"], user_id=user["sub"]
     )
 
 
@@ -87,25 +88,29 @@ async def get_providers(
     created_at_lt: datetime = datetime.now(),
     user=Depends(authenticate),
 ):
-    return await Provider.get_providers(limit=limit, created_at_lt=created_at_lt)
+    provider = Provider(user_id=user["sub"], access_token=user["session_id"])
+    return await provider.get_providers(limit=limit, created_at_lt=created_at_lt)
 
 
 @app.get("/providers/{id}")
 @error_handler
 async def get_provider(id: str, user=Depends(authenticate)):
-    return await Provider.get_provider_by_id(id)
+    provider = Provider(user_id=user["sub"], access_token=user["session_id"])
+    return await provider.get_provider_by_id(id)
 
 
 @app.put("/providers/{id}")
 @error_handler
 async def update_provider(id: str, provider: dict, user=Depends(authenticate)):
-    return await Provider.update_provider_in_db(id, update=provider)
+    provider = Provider(user_id=user["sub"], access_token=user["session_id"])
+    return await provider.update_provider_in_db(id, update=provider)
 
 
 @app.delete("/providers/{id}")
 @error_handler
 async def delete_provider(id: str, user=Depends(authenticate)):
-    return await Provider.delete_provider_in_db(id)
+    provider = Provider(user_id=user["sub"], access_token=user["session_id"])
+    return await provider.delete_provider_in_db(id)
 
 
 # Model endpoints
@@ -283,7 +288,6 @@ async def websocket_endpoint(id: str, websocket: WebSocket):
         model_output = await instance.use_custom_library(data)
         await websocket.send_text(model_output)
 
-
 # Chat
 @app.get("/instances/{id}/chat")
 async def chat(
@@ -298,7 +302,6 @@ async def chat(
     )
     return res
 
-
 @app.get("/instances/{id}/stream")
 async def multiple_function_calls(
     id: str, input: str = Body(..., embed=True), user=Depends(authenticate)
@@ -312,6 +315,5 @@ async def multiple_function_calls(
         media_type="text/plain",
     )
 
-
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

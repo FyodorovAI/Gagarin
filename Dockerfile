@@ -50,12 +50,12 @@ COPY ./src/requirements.txt ./requirements.txt
 RUN uv pip install --system --no-cache-dir --no-index --find-links /wheels -r requirements.txt \
  && rm -rf /wheels
 # Install dependencies globally using --system
-RUN uv pip install --system fyodorov_utils==0.3.30
+RUN uv pip install --system fyodorov_utils==0.3.31
 RUN uv pip install --system fyodorov_llm_agents==0.4.98
 
 COPY ./src .
 
-EXPOSE 8000
+EXPOSE 8002
 
 # Run the FastAPI server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
