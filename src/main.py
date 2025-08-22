@@ -96,7 +96,10 @@ async def get_providers(
 @error_handler
 async def get_provider(id: str, user=Depends(authenticate)):
     provider = Provider(user_id=user["sub"], access_token=user["session_id"])
-    return await provider.get_provider_by_id(id)
+    provider_model = await provider.get_provider_by_id(id)
+    if not provider_model:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    return provider_model
 
 
 @app.put("/providers/{id}")
