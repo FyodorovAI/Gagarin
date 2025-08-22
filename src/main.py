@@ -168,7 +168,8 @@ async def delete_model(id: str, user=Depends(authenticate)):
 @app.post("/agents")
 @error_handler
 async def create_agent(agent: AgentModel, user=Depends(authenticate)):
-    agent_id = await Agent.create_in_db(user["session_id"], agent)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    agent_id = await agent.create_in_db(user["session_id"], agent)
     return agent_id
 
 
@@ -198,25 +199,29 @@ async def get_agents(
 @app.get("/agents/{id}")
 @error_handler
 async def get_agent(id: str, user=Depends(authenticate)):
-    return await Agent.get_in_db(id)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent.get_in_db(id)
 
 
 @app.put("/agents/{id}")
 @error_handler
 async def update_agent(id: str, agent: dict, user=Depends(authenticate)):
-    return await Agent.update_in_db(id, agent)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent.update_in_db(id, agent)
 
 
 @app.delete("/agents/{id}")
 @error_handler
 async def delete_agent(id: str, user=Depends(authenticate)):
-    return await Agent.delete_in_db(id)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent.delete_in_db(id)
 
 
 @app.get("/agents/{id}/tools")
 @error_handler
 async def get_agent_tools(id: str, user=Depends(authenticate)):
-    return await Agent.get_agent_tools(user["session_id"], id)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent.get_agent_tools(user["session_id"], id)
 
 
 @app.post("/agents/{id}/tools")
@@ -224,13 +229,15 @@ async def get_agent_tools(id: str, user=Depends(authenticate)):
 async def assign_agent_tools(
     id: str, tools: list[ToolModel], user=Depends(authenticate)
 ):
-    return await Agent.assign_agent_tools(user["session_id"], id, tools)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent.assign_agent_tools(user["session_id"], id, tools)
 
 
 @app.delete("/agents/{id}/tools/{tool_id}")
 @error_handler
 async def remove_agent_tool(id: str, tool_id: str, user=Depends(authenticate)):
-    return await Agent.delete_agent_tool_connection(user["session_id"], id, tool_id)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent.delete_agent_tool_connection(user["session_id"], id, tool_id)
 
 
 # Instances endpoints
