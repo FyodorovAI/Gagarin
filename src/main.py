@@ -191,7 +191,8 @@ async def get_agents(
     limit: int = 10,
     created_at_lt: datetime = datetime.now(),
 ):
-    return await Agent.get_all_in_db(limit=limit, created_at_lt=created_at_lt)
+    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent.get_all_in_db(limit=limit, created_at_lt=created_at_lt)
 
 
 @app.get("/agents/{id}")
