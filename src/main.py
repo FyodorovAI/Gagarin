@@ -168,18 +168,28 @@ async def delete_model(id: str, user=Depends(authenticate)):
 @app.post("/agents")
 @error_handler
 async def create_agent(agent: AgentModel, user=Depends(authenticate)):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    agent_id = await agent.create_in_db(user["session_id"], agent)
+    print("got request to create agent")
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    print("created agent service")
+    agent_id = await agent_service.create_in_db(agent)
+    print("created agent")
     return agent_id
 
 
-@app.post("/agents/from-yaml")
+@app.post("/agents/yaml")
 @error_handler
 async def create_agent_from_yaml(request: Request, user=Depends(authenticate)):
     try:
-        agent_yaml = await request.body()
-        agent = AgentModel.from_yaml(agent_yaml)
-        return await Agent.create_in_db(user["session_id"], agent)
+        body = await request.body()
+        body_yaml = yaml.safe_load(body)
+        agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+        if 'agents' in body_yaml:
+            for agent_yaml in body_yaml['agents']:
+                agent_model = AgentModel.from_yaml(agent_yaml)
+                return await agent_service.create_in_db(agent_model, access_token=user["session_id"])
+        else:
+            agent_model = AgentModel.from_yaml(body_yaml)
+            return await agent_service.create_in_db(agent_model, access_token=user["session_id"], )
     except Exception as e:
         print("Error creating agent from yaml", str(e))
         raise HTTPException(status_code=400, detail="Invalid YAML format")
@@ -192,36 +202,42 @@ async def get_agents(
     limit: int = 10,
     created_at_lt: datetime = datetime.now(),
 ):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent.get_all_in_db(limit=limit, created_at_lt=created_at_lt)
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    agents = await agent_service.get_all_in_db(limit=limit, created_at_lt=created_at_lt)
+    if not agents:
+        raise HTTPException(status_code=404, detail="No agents found")
+    return agents
 
 
 @app.get("/agents/{id}")
 @error_handler
 async def get_agent(id: str, user=Depends(authenticate)):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent.get_in_db(id)
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    agent_model = await agent_service.get_in_db(id)
+    if not agent_model:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return agent_model
 
 
 @app.put("/agents/{id}")
 @error_handler
 async def update_agent(id: str, agent: dict, user=Depends(authenticate)):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent.update_in_db(id, agent)
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent_service.update_in_db(id, agent)
 
 
 @app.delete("/agents/{id}")
 @error_handler
 async def delete_agent(id: str, user=Depends(authenticate)):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent.delete_in_db(id)
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent_service.delete_in_db(id)
 
 
 @app.get("/agents/{id}/tools")
 @error_handler
 async def get_agent_tools(id: str, user=Depends(authenticate)):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent.get_agent_tools(user["session_id"], id)
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent_service.get_agent_tools(user["session_id"], id)
 
 
 @app.post("/agents/{id}/tools")
@@ -229,15 +245,15 @@ async def get_agent_tools(id: str, user=Depends(authenticate)):
 async def assign_agent_tools(
     id: str, tools: list[ToolModel], user=Depends(authenticate)
 ):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent.assign_agent_tools(user["session_id"], id, tools)
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent_service.assign_agent_tools(user["session_id"], id, tools)
 
 
 @app.delete("/agents/{id}/tools/{tool_id}")
 @error_handler
 async def remove_agent_tool(id: str, tool_id: str, user=Depends(authenticate)):
-    agent = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent.delete_agent_tool_connection(user["session_id"], id, tool_id)
+    agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    return await agent_service.delete_agent_tool_connection(user["session_id"], id, tool_id)
 
 
 # Instances endpoints
