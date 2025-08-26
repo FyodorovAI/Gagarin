@@ -122,10 +122,8 @@ async def delete_provider(id: str, user=Depends(authenticate)):
 @app.post("/models")
 @error_handler
 async def create_model(model: dict, user=Depends(authenticate)):
-    print(f"Model: {model}")
-    print(f"User: {user}")
     model_obj = LLMModel.from_dict(model)
-    llm_service = LLMService()
+    llm_service = LLMService(access_token=user["session_id"])
     result = await llm_service.save_model_in_db(
         access_token=user["session_id"], user_id=user["sub"], model=model_obj
     )
