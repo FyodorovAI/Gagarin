@@ -167,7 +167,6 @@ async def get_model_by_name(name: str, user=Depends(authenticate)):
 @app.put("/models/{id}")
 @error_handler
 async def update_model(id: str, model: dict, user=Depends(authenticate)):
-    print(f"PUT /models/{id} with data: {model}")
     llm_service = LLMService()
     return await llm_service.update_model_by_id_in_db(
         access_token=user["session_id"], id=id, update_data=model
