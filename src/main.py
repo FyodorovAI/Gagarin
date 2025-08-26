@@ -185,8 +185,8 @@ async def create_agent(agent: AgentModel, user=Depends(authenticate)):
     print("got request to create agent")
     agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
     print("created agent service")
-    agent_id = await agent_service.create_in_db(agent)
-    print("created agent")
+    agent_id = await agent_service.create_in_db(agent, user_id=user["sub"])
+    print("created agent:", agent_id)
     return agent_id
 
 
