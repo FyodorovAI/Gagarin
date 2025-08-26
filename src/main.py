@@ -135,7 +135,12 @@ async def get_models(
     created_at_lt: datetime = datetime.now(),
     user=Depends(authenticate),
 ):
-    return await LLM.get_models(limit=limit, created_at_lt=created_at_lt)
+    return await LLM.get_models(
+        access_token=user["session_id"],
+        user_id=user["sub"],
+        limit=limit,
+        created_at_lt=created_at_lt
+    )
 
 
 @app.get("/models/{id}")
