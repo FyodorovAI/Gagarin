@@ -1,3 +1,4 @@
+import yaml
 from fastapi import FastAPI, Depends, HTTPException, Body, WebSocket, Request
 from fastapi.responses import StreamingResponse
 
@@ -16,7 +17,8 @@ from fyodorov_llm_agents.tools.mcp_tool_model import MCPTool as ToolModel
 from fyodorov_llm_agents.providers.provider_service import Provider
 from fyodorov_llm_agents.providers.provider_model import ProviderModel
 from fyodorov_llm_agents.agents.agent_service import AgentService as Agent
-from fyodorov_llm_agents.models.llm_service import LLM
+from fyodorov_llm_agents.models.llm_service import LLMService
+from fyodorov_llm_agents.models.llm_model import LLMModel
 
 # User endpoints
 from fyodorov_utils.auth.endpoints import users_app
@@ -122,10 +124,12 @@ async def delete_provider(id: str, user=Depends(authenticate)):
 async def create_model(model: dict, user=Depends(authenticate)):
     print(f"Model: {model}")
     print(f"User: {user}")
-    model_obj = LLM.from_dict(model)
-    return await LLM.save_model_in_db(
+    model_obj = LLMModel.from_dict(model)
+    llm_service = LLMService()
+    result = await llm_service.save_model_in_db(
         access_token=user["session_id"], user_id=user["sub"], model=model_obj
     )
+    return result
 
 
 @app.get("/models")
@@ -135,7 +139,8 @@ async def get_models(
     created_at_lt: datetime = datetime.now(),
     user=Depends(authenticate),
 ):
-    return await LLM.get_models(
+    llm_service = LLMService()
+    return await llm_service.get_models(
         access_token=user["session_id"],
         user_id=user["sub"],
         limit=limit,
@@ -146,28 +151,34 @@ async def get_models(
 @app.get("/models/{id}")
 @error_handler
 async def get_model(id: str, user=Depends(authenticate)):
-    return await LLM.get_model(id=id)
+    llm_service = LLMService()
+    return await llm_service.get_model(access_token=user["session_id"], id=id)
 
 
 @app.get("/models/")
 @error_handler
 async def get_model_by_name(name: str, user=Depends(authenticate)):
-    return await LLM.get_model(
-        user_id=user["sub"], name=name
+    llm_service = LLMService()
+    return await llm_service.get_model(
+        access_token=user["session_id"], user_id=user["sub"], name=name
     )
 
 
 @app.put("/models/{id}")
 @error_handler
 async def update_model(id: str, model: dict, user=Depends(authenticate)):
-    llm_service = LLM()
-    return await llm_service.update_in_db(id, model)
+    print(f"PUT /models/{id} with data: {model}")
+    llm_service = LLMService()
+    return await llm_service.update_model_by_id_in_db(
+        access_token=user["session_id"], id=id, update_data=model
+    )
 
 
 @app.delete("/models/{id}")
 @error_handler
 async def delete_model(id: str, user=Depends(authenticate)):
-    return await LLM.delete_model_in_db(access_token=user["session_id"], user_id=user["sub"], name=None, id=id)
+    llm_service = LLMService()
+    return await llm_service.delete_model_in_db(access_token=user["session_id"], id=id)
 
 
 # Agents endpoints
