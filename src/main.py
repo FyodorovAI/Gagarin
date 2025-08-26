@@ -160,7 +160,8 @@ async def get_model_by_name(name: str, user=Depends(authenticate)):
 @app.put("/models/{id}")
 @error_handler
 async def update_model(id: str, model: dict, user=Depends(authenticate)):
-    return await LLM.update_model(id, model)
+    llm_service = LLM()
+    return await llm_service.update_in_db(id, model)
 
 
 @app.delete("/models/{id}")
