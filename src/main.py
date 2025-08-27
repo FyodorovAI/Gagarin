@@ -178,7 +178,7 @@ async def update_model(id: str, model: dict, user=Depends(authenticate)):
 @error_handler
 async def delete_model(id: str, user=Depends(authenticate)):
     llm_service = LLMService()
-    result = await llm_service.delete_model_in_db(access_token=user["session_id"], id=id)
+    result = await llm_service.delete_model_in_db(access_token=user["session_id"], id=id, user_id=user["sub"])
     if not result:
         raise HTTPException(status_code=404, detail="Model not found")
     return {"detail": "Model deleted successfully"}
