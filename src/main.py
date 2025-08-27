@@ -218,6 +218,7 @@ async def get_agents(
 ):
     agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
     agents = await agent_service.get_all_in_db(user_id=user["sub"], limit=limit, created_at_lt=created_at_lt)
+    print(f"Got agents: {agents}")
     if not agents:
         raise HTTPException(status_code=404, detail="No agents found")
     return agents
