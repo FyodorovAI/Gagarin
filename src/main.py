@@ -115,7 +115,10 @@ async def update_provider(id: str, provider: dict, user=Depends(authenticate)):
 @error_handler
 async def delete_provider(id: str, user=Depends(authenticate)):
     provider = Provider(user_id=user["sub"], access_token=user["session_id"])
-    return await provider.delete_provider_in_db(id)
+    result = await provider.delete_provider_in_db(id, user_id=user["sub"])
+    if not result:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    return {"detail": "Provider deleted successfully"}
 
 
 # Model endpoints
@@ -175,8 +178,10 @@ async def update_model(id: str, model: dict, user=Depends(authenticate)):
 @error_handler
 async def delete_model(id: str, user=Depends(authenticate)):
     llm_service = LLMService()
-    return await llm_service.delete_model_in_db(access_token=user["session_id"], id=id)
-
+    result = await llm_service.delete_model_in_db(access_token=user["session_id"], id=id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Model not found")
+    return {"detail": "Model deleted successfully"}
 
 # Agents endpoints
 @app.post("/agents")
@@ -248,7 +253,10 @@ async def update_agent(id: str, agent: dict, user=Depends(authenticate)):
 @error_handler
 async def delete_agent(id: str, user=Depends(authenticate)):
     agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent_service.delete_in_db(id)
+    result = await agent_service.delete_in_db(id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return {"detail": "Agent deleted successfully"}
 
 
 @app.get("/agents/{id}/tools")
@@ -271,7 +279,10 @@ async def assign_agent_tools(
 @error_handler
 async def remove_agent_tool(id: str, tool_id: str, user=Depends(authenticate)):
     agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
-    return await agent_service.delete_agent_tool_connection(user["session_id"], id, tool_id)
+    result = await agent_service.delete_agent_tool_connection(user["session_id"], id, tool_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Tool or agent not found")
+    return {"detail": "Agent tool deleted successfully"}
 
 
 # Instances endpoints
@@ -310,7 +321,10 @@ async def update_instance(id: str, instance: dict, user=Depends(authenticate)):
 @app.delete("/instances/{id}")
 @error_handler
 async def delete_instance(id: str, user=Depends(authenticate)):
-    return await Instance.delete_in_db(id)
+    result = await Instance.delete_in_db(id, user_id=user["sub"])
+    if not result:
+        raise HTTPException(status_code=404, detail="Instance not found")
+    return {"detail": "Instance deleted successfully"}
 
 
 # Chat via websocket
