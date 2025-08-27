@@ -51,7 +51,7 @@ RUN uv pip install --system --no-cache-dir --no-index --find-links /wheels -r re
  && rm -rf /wheels
 # Install dependencies globally using --system
 RUN uv pip install --system fyodorov_utils==0.4.24
-RUN uv pip install --system fyodorov_llm_agents==0.5.24
+RUN uv pip install --system fyodorov_llm_agents==0.5.25
 
 COPY ./src .
 

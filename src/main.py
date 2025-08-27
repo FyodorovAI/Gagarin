@@ -227,8 +227,11 @@ async def get_agents(
 @app.get("/agents/{id}")
 @error_handler
 async def get_agent(id: str, user=Depends(authenticate)):
+    print(f"GET /agents/{id} called")
     agent_service = Agent(user_id=user["sub"], access_token=user["session_id"])
+    print(f"Created AgentService")
     agent_model = await agent_service.get_in_db(id)
+    print(f"Fetched agent: {agent_model}")
     if not agent_model:
         raise HTTPException(status_code=404, detail="Agent not found")
     return agent_model
