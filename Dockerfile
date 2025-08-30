@@ -50,7 +50,7 @@ COPY ./src/requirements.txt ./requirements.txt
 RUN uv pip install --system --no-cache-dir --no-index --find-links /wheels -r requirements.txt \
  && rm -rf /wheels
 # Install dependencies globally using --system
-RUN uv pip install --system fyodorov_utils==0.4.49
+RUN uv pip install --system fyodorov_utils==0.4.50
 RUN uv pip install --system fyodorov_llm_agents==0.5.51
 
 COPY ./src .
