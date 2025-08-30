@@ -2,7 +2,7 @@ import yaml
 from fastapi import FastAPI, Depends, HTTPException, Body, WebSocket, Request
 from fastapi.responses import StreamingResponse
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pydantic import HttpUrl
 import uvicorn
 
@@ -137,7 +137,7 @@ async def create_model(model: dict, user=Depends(authenticate)):
 @error_handler
 async def get_models(
     limit: int = 10,
-    created_at_lt: datetime = datetime.now(),
+    created_at_lt: datetime = datetime.now()+timedelta(days=1),
     user=Depends(authenticate),
 ):
     llm_service = LLMService()
